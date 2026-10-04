@@ -1,5 +1,5 @@
 const DEFAULT_USERNAME = "admin";
-
+const DEFAULT_PASSWORD = "healthcare";
 const ADMIN_CREDENTIALS_KEY = "adminCredentials";
 const STORAGE_KEY = "healthCareProducts";
 
