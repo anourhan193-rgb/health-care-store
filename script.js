@@ -1,6 +1,6 @@
-const WHATSAPP_NUMBER = "966500000000"; // استبدلي برقم واتساب الخاص بك
+const STORAGE_KEY = "healthCareProducts";
 
-const products = {
+const defaultProducts = {
   health: [
     {
       id: 1,
@@ -117,6 +117,29 @@ const products = {
   ]
 };
 
+const WHATSAPP_NUMBER = "966500000000";
+
+function getStoredProducts() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProducts));
+    return JSON.parse(JSON.stringify(defaultProducts));
+  }
+
+  try {
+    const parsed = JSON.parse(saved);
+    if (parsed && typeof parsed === "object") {
+      return parsed;
+    }
+  } catch (error) {
+    console.error("خطأ في قراءة العناصر:", error);
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProducts));
+  return JSON.parse(JSON.stringify(defaultProducts));
+}
+
+let products = getStoredProducts();
 let cart = JSON.parse(localStorage.getItem("healthCareCart")) || [];
 let activeCategory = "all";
 let searchText = "";
@@ -129,13 +152,16 @@ function saveCart() {
   localStorage.setItem("healthCareCart", JSON.stringify(cart));
 }
 
+function saveProducts() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+}
+
 function getAllProducts() {
   return Object.values(products).flat();
 }
 
 function findProductById(productId) {
-  const allProducts = getAllProducts();
-  return allProducts.find((product) => product.id === productId) || null;
+  return getAllProducts().find((product) => product.id === productId) || null;
 }
 
 function getCartCount() {
@@ -143,7 +169,10 @@ function getCartCount() {
 }
 
 function updateCartBadge() {
-  document.getElementById("cartCount").textContent = getCartCount();
+  const cartCountEl = document.getElementById("cartCount");
+  if (cartCountEl) {
+    cartCountEl.textContent = getCartCount();
+  }
 }
 
 function renderProducts() {
@@ -151,7 +180,7 @@ function renderProducts() {
     const container = document.getElementById(`${categoryKey}Products`);
     if (!container) return;
 
-    const categoryProducts = products[categoryKey].filter((product) => {
+    const categoryProducts = (products[categoryKey] || []).filter((product) => {
       const text = `${product.name} ${product.description}`.toLowerCase();
       const matchesSearch = text.includes(searchText);
       if (activeCategory === "all") return matchesSearch;
@@ -189,8 +218,7 @@ function filterProducts(category, button) {
   });
 
   document.querySelectorAll(".product-category").forEach((section) => {
-    const sectionCategory = section.dataset.category;
-    const visible = category === "all" || sectionCategory === category;
+    const visible = category === "all" || section.dataset.category === category;
     section.classList.toggle("hidden", !visible);
   });
 
@@ -208,7 +236,6 @@ function addToCart(productId) {
   if (!product) return;
 
   const existingItem = cart.find((item) => item.id === productId);
-
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
@@ -222,11 +249,9 @@ function addToCart(productId) {
 
 function updateQuantity(productId, change) {
   const item = cart.find((entry) => entry.id === productId);
-
   if (!item) return;
 
   item.quantity += change;
-
   if (item.quantity <= 0) {
     cart = cart.filter((entry) => entry.id !== productId);
   }
@@ -248,6 +273,8 @@ function renderCart() {
   const subtotalEl = document.getElementById("subtotal");
   const deliveryEl = document.getElementById("delivery");
   const totalEl = document.getElementById("total");
+
+  if (!cartItemsContainer || !subtotalEl || !deliveryEl || !totalEl) return;
 
   if (cart.length === 0) {
     cartItemsContainer.innerHTML = `
@@ -285,7 +312,6 @@ function renderCart() {
             <span>${item.quantity}</span>
             <button onclick="updateQuantity(${product.id}, 1)">+</button>
           </div>
-
           <button class="remove-button" onclick="removeFromCart(${product.id})">حذف</button>
         </div>
       </div>
@@ -350,14 +376,28 @@ ${cartText}
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("searchInput").addEventListener("input", handleSearchInput);
+  const searchInput = document.getElementById("searchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", handleSearchInput);
+  }
 
   document.querySelectorAll(".category-button").forEach((button) => {
     button.addEventListener("click", () => filterProducts(button.dataset.category, button));
   });
 
-  filterProducts("all", document.querySelector(".category-button.active"));
+  const defaultCategoryButton = document.querySelector(".category-button.active");
+  if (defaultCategoryButton) {
+    filterProducts("all", defaultCategoryButton);
+  }
+
   renderCart();
   updateCartBadge();
 });
 
+window.addToCart = addToCart;
+window.updateQuantity = updateQuantity;
+window.removeFromCart = removeFromCart;
+window.submitOrder = submitOrder;
+window.filterProducts = filterProducts;
+window.handleSearchInput = handleSearchInput;
+window.saveProducts = saveProducts;
