@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Health Care | مستلزمات الرعاية الصحية، الكليات العلمية، ومعامل التحاليل الطبية" />
+  <title>Health Care | مستلزمات الرعاية الصحية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="header">
+    <a href="#home" class="logo" aria-label="Health Care home">
+      <span class="logo-red">Health</span>
+      <span class="logo-blue">Care</span>
+    </a>
+
+    <nav class="nav">
+      <a href="#home">الرئيسية</a>
+      <a href="#about">من نحن</a>
+      <a href="#products">المنتجات</a>
+      <a href="#cart" class="cart-link">
+        🛒 السلة
+        <span id="cartCount">0</span>
+      </a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="hero-overlay"></div>
+      <div class="hero-content">
+        <div class="pill-icon">⚕</div>
+        <h1>Health Care</h1>
+        <h2>رعايتك تبدأ من هنا</h2>
+        <p>
+          مستلزمات الرعاية الصحية المنزلية، منتجات الكليات العلمية،
+          وأدوات معامل التحاليل الطبية بجودة عالية وسهولة في الطلب.
+        </p>
+        <div class="hero-actions">
+          <a href="#products" class="main-button">تصفح المنتجات</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="about">
+      <div class="section-heading">
+        <span>من نحن</span>
+        <h2>Health Care</h2>
+      </div>
+
+      <div class="about-box">
+        <div class="about-icon">🩺</div>
+        <div class="about-text">
+          <h3>رعاية أفضل... لصحة أفضل</h3>
+          <p>
+            Health Care هي منصة عربية لتوفير مستلزمات الرعاية الصحية
+            والمعدات العلمية والطبية بطريقة منظمة وسهلة.
+          </p>
+          <p>
+            نوفر منتجات مناسبة للاستخدام المنزلي، الطلاب في الكليات العلمية،
+            وأصحاب المعامل الطبية والتحاليل.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="products" class="products-section">
+      <div class="section-heading">
+        <span>منتجاتنا</span>
+        <h2>اختاري القسم المناسب</h2>
+      </div>
+
+      <div class="search-box">
+        <input
+          type="search"
+          id="searchInput"
+          placeholder="🔎 ابحثي عن منتج..."
+          aria-label="البحث عن منتج"
+        />
+      </div>
+
+      <div class="categories">
+        <button class="category-button active" data-category="all">جميع المنتجات</button>
+        <button class="category-button" data-category="health">🏠 الرعاية الصحية</button>
+        <button class="category-button" data-category="science">🎓 الكليات العلمية</button>
+        <button class="category-button" data-category="laboratory">🧪 معامل التحاليل الطبية</button>
+      </div>
+
+      <div class="product-category" data-category="health">
+        <div class="category-heading">
+          <h3>🏠 مستلزمات الرعاية الصحية</h3>
+          <p>منتجات مناسبة للعناية المنزلية والمتابعة الصحية</p>
+        </div>
+        <div id="healthProducts" class="products-grid"></div>
+      </div>
+
+      <div class="product-category" data-category="science">
+        <div class="category-heading">
+          <h3>🎓 مستلزمات الكليات العلمية</h3>
+          <p>مواد عملية للطلاب والمعامل التعليمية</p>
+        </div>
+        <div id="scienceProducts" class="products-grid"></div>
+      </div>
+
+      <div class="product-category" data-category="laboratory">
+        <div class="category-heading">
+          <h3>🧪 مستلزمات معامل التحاليل الطبية</h3>
+          <p>أدوات ومستلزمات لأعمال المختبر الطبي</p>
+        </div>
+        <div id="laboratoryProducts" class="products-grid"></div>
+      </div>
+    </section>
+
+    <section id="cart" class="cart-section">
+      <div class="section-heading">
+        <span>طلبك</span>
+        <h2>سلة الطلب</h2>
+      </div>
+
+      <div id="cartItems" class="cart-items"></div>
+
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>إجمالي المنتجات</span>
+          <strong id="subtotal">0 جنيه</strong>
+        </div>
+
+        <div class="summary-row">
+          <span>سعر التوصيل</span>
+          <strong id="delivery">0 جنيه</strong>
+        </div>
+
+        <hr />
+
+        <div class="summary-row total-row">
+          <span>الإجمالي النهائي</span>
+          <strong id="total">0 جنيه</strong>
+        </div>
+      </div>
+
+      <div class="order-form">
+        <h2>بيانات الطلب</h2>
+        <p class="form-note">املئي البيانات التالية لإرسال الطلب عبر واتساب.</p>
+
+        <label for="customerName">الاسم بالكامل</label>
+        <input type="text" id="customerName" placeholder="اكتبي الاسم بالكامل" />
+
+        <label for="customerPhone">رقم الهاتف</label>
+        <input type="tel" id="customerPhone" placeholder="05xxxxxxxx" />
+
+        <label for="customerAddress">العنوان</label>
+        <textarea id="customerAddress" placeholder="المحافظة - المنطقة - الشارع - رقم العقار"></textarea>
+
+        <h3>طريقة الدفع</h3>
+
+        <label class="payment-option">
+          <input type="radio" name="payment" value="الدفع عند الاستلام" />
+          الدفع عند الاستلام
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="payment" value="محفظة إلكترونية" />
+          محفظة إلكترونية
+        </label>
+
+        <label class="payment-option">
+          <input type="radio" name="payment" value="تحويل بنكي" />
+          تحويل بنكي
+        </label>
+
+        <button class="whatsapp-button" onclick="submitOrder()">📱 إرسال الطلب عبر واتساب</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-logo">
+      <span>Health</span>Care
+    </div>
+    <p>رعاية أفضل... لصحة أفضل</p>
+    <p class="copyright">© 2026 Health Care</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
