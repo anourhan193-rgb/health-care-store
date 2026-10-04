@@ -1,4 +1,4 @@
-const ADMIN_PASSWORD = "healthcare123";
+const ADMIN_PASSWORD = "1234";
 const STORAGE_KEY = "healthCareProducts";
 
 const defaultProducts = {
