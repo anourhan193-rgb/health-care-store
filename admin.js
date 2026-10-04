@@ -1,4 +1,6 @@
-const ADMIN_PASSWORD = "1234";
+const DEFAULT_USERNAME = "admin";
+const DEFAULT_PASSWORD = "healthcare$#";
+const ADMIN_CREDENTIALS_KEY = "adminCredentials";
 const STORAGE_KEY = "healthCareProducts";
 
 const defaultProducts = {
@@ -22,6 +24,31 @@ const defaultProducts = {
   ]
 };
 
+function initializeAdminCredentials() {
+  const saved = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
+
+  if (!saved) {
+    localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify({
+      username: DEFAULT_USERNAME,
+      password: DEFAULT_PASSWORD
+    }));
+  }
+}
+
+function getAdminCredentials() {
+  const saved = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
+  if (!saved) {
+    initializeAdminCredentials();
+    return { username: DEFAULT_USERNAME, password: DEFAULT_PASSWORD };
+  }
+
+  try {
+    return JSON.parse(saved);
+  } catch {
+    return { username: DEFAULT_USERNAME, password: DEFAULT_PASSWORD };
+  }
+}
+
 function getProducts() {
   const saved = localStorage.getItem(STORAGE_KEY);
   if (!saved) {
@@ -34,8 +61,8 @@ function getProducts() {
     if (parsed && typeof parsed === "object") {
       return parsed;
     }
-  } catch (error) {
-    console.error("Error reading products:", error);
+  } catch {
+    console.error("Error reading products");
   }
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultProducts));
@@ -55,10 +82,13 @@ function showToast(message) {
 }
 
 function loginAdmin() {
+  const username = document.getElementById("adminUsername").value.trim();
   const password = document.getElementById("adminPassword").value.trim();
   const error = document.getElementById("loginError");
 
-  if (password === ADMIN_PASSWORD) {
+  const credentials = getAdminCredentials();
+
+  if (username === credentials.username && password === credentials.password) {
     document.getElementById("loginWrap").style.display = "none";
     document.getElementById("adminPanel").style.display = "block";
     error.textContent = "";
@@ -66,12 +96,13 @@ function loginAdmin() {
     return;
   }
 
-  error.textContent = "كلمة المرور غير صحيحة";
+  error.textContent = "اسم المستخدم أو كلمة المرور غير صحيحة";
 }
 
 function logoutAdmin() {
   document.getElementById("loginWrap").style.display = "flex";
   document.getElementById("adminPanel").style.display = "none";
+  document.getElementById("adminUsername").value = "";
   document.getElementById("adminPassword").value = "";
 }
 
@@ -82,6 +113,28 @@ function resetAddForm() {
   document.getElementById("productIcon").value = "";
   document.getElementById("productDescription").value = "";
   document.getElementById("productImage").value = "";
+}
+
+function changePassword() {
+  const currentPassword = prompt("أدخل كلمة المرور الحالية:");
+  if (!currentPassword) return;
+
+  const credentials = getAdminCredentials();
+
+  if (currentPassword !== credentials.password) {
+    alert("كلمة المرور الحالية غير صحيحة");
+    return;
+  }
+
+  const newPassword = prompt("أدخل كلمة المرور الجديدة:");
+  if (!newPassword || newPassword.length < 6) {
+    alert("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+    return;
+  }
+
+  credentials.password = newPassword;
+  localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify(credentials));
+  alert("تم تغيير كلمة المرور بنجاح");
 }
 
 document.getElementById("addProductForm")?.addEventListener("submit", function (e) {
@@ -303,8 +356,11 @@ document.querySelectorAll(".tab-btn").forEach((button) => {
   });
 });
 
+initializeAdminCredentials();
+
 window.loginAdmin = loginAdmin;
 window.logoutAdmin = logoutAdmin;
+window.changePassword = changePassword;
 window.resetAddForm = resetAddForm;
 window.openEditModal = openEditModal;
 window.closeEditModal = closeEditModal;
