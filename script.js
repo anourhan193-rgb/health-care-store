@@ -232,28 +232,25 @@ function renderProducts() {
       return;
     }
 
-    container.innerHTML = filtered.map(product => `
-      <article class="product-card">
-        ${
-          product.image
-            ? `<img class="product-image"
-                    src="${escapeHTML(product.image)}"
-                    alt="${escapeHTML(product.name)}"
-                    loading="lazy"
-                    onerror="this.style.display='none'">`
-            : ""
-        }
-        <div class="product-body">
-          <h3>${escapeHTML(product.name)}</h3>
-          <p>${escapeHTML(product.description)}</p>
-          <span class="price">${formatCurrency(product.price)}</span>
-          <button class="add-button"
-            onclick="addToCart('${escapeHTML(product.id)}')">
-            أضف إلى السلة
-          </button>
-        </div>
-      </article>
-    `).join("");
+  
+    container.innerHTML = filtered.map(function(product) {
+      const imageHTML = product.image
+        ? '<img class="product-image" src="' + escapeHTML(product.image) +
+          '" alt="' + escapeHTML(product.name) +
+          '" loading="lazy" onerror="this.style.display=\'none\'">'
+        : '';
+
+      return '<article class="product-card">' +
+        imageHTML +
+        '<div class="product-body">' +
+          '<h3>' + escapeHTML(product.name) + '</h3>' +
+          '<p>' + escapeHTML(product.description) + '</p>' +
+          '<span class="price">' + formatCurrency(product.price) + '</span>' +
+          '<button class="add-button" onclick="addToCart(\'' +
+            escapeHTML(product.id) + '\')">أضف إلى السلة</button>' +
+        '</div>' +
+      '</article>';
+    }).join("");
   });
 }
 
