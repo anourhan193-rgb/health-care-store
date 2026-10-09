@@ -340,31 +340,19 @@ function removeFromCart(productId) {
   updateCartBadge();
 }
 
-function renderCart() {
-  var container = document.getElementById("cartItems");
-  var subtotalEl = document.getElementById("subtotal");
-  var deliveryEl = document.getElementById("delivery");
-  var totalEl = document.getElementById("total");
+if (!cart.length) {
+  container.innerHTML =
+    '<div class="empty-message">السلة فارغة حاليًا 🛒</div>';
 
-  if (!container || !subtotalEl || !deliveryEl || !totalEl) return;
+  subtotalEl.textContent = formatCurrency(0);
+  deliveryEl.textContent = formatCurrency(0);
+  totalEl.textContent = formatCurrency(0);
 
-  cart = cart.filter(function(item) {
-    return findProductById(item.id);
-  });
+  saveCart();
+  return;
+}
 
-  if (cart.length === 0) {
-    container.innerHTML =
-      '<div class="empty-message">السلة فارغة حاليًا 🛒</div>';
-
-    subtotalEl.textContent = formatCurrency(0);
-    deliveryEl.textContent = formatCurrency(0);
-    totalEl.textContent = formatCurrency(0);
-
-    saveCart();
-    return;
-  }
-
-  var subtotal = 0;
+var subtotal = 0;
   var html = "";
 
   cart.forEach(function(item) {
