@@ -140,13 +140,19 @@ function parseCSV(text) {
   return rows;
 }
 
+
 function findColumn(headers, names, fallback) {
-  const normalizedNames = names.map(function(name) {
-    return normalize(name);
-  });
+  function clean(value) {
+    return String(value ?? "")
+      .trim()
+      .replace(/\s+/g, "")
+      .toLowerCase();
+  }
+
+  const normalizedNames = names.map(clean);
 
   const index = headers.findIndex(function(header) {
-    return normalizedNames.includes(normalize(header));
+    return normalizedNames.includes(clean(header));
   });
 
   return index === -1 ? fallback : index;
