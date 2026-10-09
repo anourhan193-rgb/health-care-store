@@ -212,49 +212,74 @@ function getCartCount() {
   return cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
 }
 
+
 function renderProducts() {
-  categoryKeys.forEach(category => {
-    const container = document.getElementById(category + "Products");
+  categoryKeys.forEach(function(category) {
+    var container = document.getElementById(category + "Products");
     if (!container) return;
 
-   
-container.innerHTML = filtered.map(function(product) {
-  const imageHTML = product.image
-    ? '<img class="product-image" src="' +
-      escapeHTML(product.image) +
-      '" alt="' + escapeHTML(product.name) +
-      '" loading="lazy" onerror="this.style.display=\'none\'">'
-    : '';
+    var list = products[category] || [];
 
-  return '<article class="product-card">' +
-    imageHTML +
-    '<div class="product-body">' +
-      '<h3>' + escapeHTML(product.name) + '</h3>' +
-      '<p>' + escapeHTML(product.description) + '</p>' +
-      '<span class="price">' + formatCurrency(product.price) + '</span>' +
-      '<button class="add-button" onclick="addToCart(\'' +
-        escapeHTML(product.id) +
-        '\')">أضف إلى السلة</button>' +
-    '</div>' +
-  '</article>';
-}).join("");
+    var filtered = list.filter(function(product) {
+      var name = String(product.name || "").toLowerCase();
+      var search = String(searchText || "").toLowerCase();
+
+      var matches = name.includes(search);
+      var categoryMatches =
+        activeCategory === "all" ||
+        product.category === activeCategory;
+
+      return matches && categoryMatches;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML =
+        '<div class="empty-message" style="grid-column:1/-1">' +
+        'لا توجد منتجات في هذا القسم حاليًا' +
+        '</div>';
+      return;
+    }
+
+    var html = "";
+
+    filtered.forEach(function(product) {
+      var imageHTML = "";
+
+      if (product.image) {
+        imageHTML =
+          '<img class="product-image" src="' +
+          escapeHTML(product.image) +
+          '" alt="' + escapeHTML(product.name) +
+          '" loading="lazy">';
+      }
+
+      html +=
+        '<article class="product-card">' +
+          imageHTML +
+          '<div class="product-body">' +
+            '<h3>' + escapeHTML(product.name) + '</h3>' +
+            '<p>' + escapeHTML(product.description || "") + '</p>' +
+            '<span class="price">' +
+              formatCurrency(product.price) +
+            '</span>' +
+            '<button class="add-button" data-product-id="' +
+              escapeHTML(product.id) +
+              '" type="button">' +
+              'أضف إلى السلة' +
+            '</button>' +
+          '</div>' +
+        '</article>';
+    });
+
+    container.innerHTML = html;
+
+    container.querySelectorAll(".add-button").forEach(function(button) {
+      button.addEventListener("click", function() {
+        addToCart(button.getAttribute("data-product-id"));
+      });
+    });
   });
 }
-
-function filterProducts(category, button) {
-  activeCategory = category;
-
-  document.querySelectorAll(".category-button").forEach(btn => {
-    btn.classList.toggle("active", btn === button);
-  });
-
-  document.querySelectorAll(".product-category").forEach(section => {
-    section.classList.toggle(
-      "hidden",
-      category !== "all" && section.dataset.category !== category
-    );
-  });
-
   renderProducts();
 }
 
