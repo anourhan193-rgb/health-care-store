@@ -197,12 +197,12 @@ function convertSheetToProducts(csvText) {
     1
   );
 
-  const priceIndex = findColumn(
-    headers,
-    ["السعر", "price"],
-    2
-  );
-
+  
+const priceIndex = findColumn(
+  headers,
+  ["السعر", "price", "Price", "سعر المنتج"],
+  2
+);
   const imageIndex = findColumn(
     headers,
     ["رابط الصورة", "الصورة", "image", "image url"],
