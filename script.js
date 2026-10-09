@@ -1,5 +1,6 @@
 
 
+
 const CART_KEY = "healthCareCart";
 
 const SHEET_CSV_URL =
@@ -169,7 +170,6 @@ function findColumn(headers, names, fallback) {
   return index === -1 ? fallback : index;
 }
 
-
 function convertPrice(value) {
   let text = String(value ?? "").trim();
 
@@ -305,6 +305,33 @@ function updateCartBadge() {
 
   if (element) {
     element.textContent = getCartCount();
+  }
+}
+
+/* إخفاء سطر التوصيل الموجود في صفحة السلة */
+function hideDeliveryLine() {
+  const deliveryEl = document.getElementById("delivery");
+
+  if (!deliveryEl) return;
+
+  deliveryEl.textContent = "";
+  deliveryEl.style.display = "none";
+
+  const row = deliveryEl.closest(
+    ".delivery-row, .delivery-line, .cart-delivery, .summary-delivery, [data-delivery]"
+  );
+
+  if (row) {
+    row.style.display = "none";
+  } else {
+    const parent = deliveryEl.parentElement;
+
+    if (
+      parent &&
+      /توصيل|الشحن|delivery|shipping/i.test(parent.textContent || "")
+    ) {
+      parent.style.display = "none";
+    }
   }
 }
 
@@ -478,9 +505,11 @@ function renderCart() {
   const deliveryEl = document.getElementById("delivery");
   const totalEl = document.getElementById("total");
 
-  if (!container || !subtotalEl || !deliveryEl || !totalEl) {
+  if (!container || !subtotalEl || !totalEl) {
     return;
   }
+
+  hideDeliveryLine();
 
   cart = cart.filter(function(item) {
     return findProductById(item.id);
@@ -491,8 +520,12 @@ function renderCart() {
       '<div class="empty-message">السلة فارغة حاليًا 🛒</div>';
 
     subtotalEl.textContent = formatCurrency(0);
-    deliveryEl.textContent = formatCurrency(0);
     totalEl.textContent = formatCurrency(0);
+
+    if (deliveryEl) {
+      deliveryEl.textContent = "";
+      deliveryEl.style.display = "none";
+    }
 
     saveCart();
     updateCartBadge();
@@ -572,11 +605,14 @@ function renderCart() {
     }
   );
 
-  const delivery = subtotal > 0 ? 15 : 0;
-
+  // التعديل الوحيد في الحساب: الإجمالي بدون توصيل
   subtotalEl.textContent = formatCurrency(subtotal);
-  deliveryEl.textContent = formatCurrency(delivery);
-  totalEl.textContent = formatCurrency(subtotal + delivery);
+  totalEl.textContent = formatCurrency(subtotal);
+
+  if (deliveryEl) {
+    deliveryEl.textContent = "";
+    deliveryEl.style.display = "none";
+  }
 
   saveCart();
   updateCartBadge();
@@ -629,8 +665,7 @@ function submitOrder() {
     return;
   }
 
-  const delivery = subtotal > 0 ? 15 : 0;
-
+  // رسالة واتساب بدون أي سطر أو رسوم توصيل
   const message =
     "*طلب جديد من Health Care*\n\n" +
     "الاسم: " + name + "\n" +
@@ -639,8 +674,7 @@ function submitOrder() {
     "طريقة الدفع: " + payment.value + "\n\n" +
     "المنتجات:\n" + itemsText + "\n" +
     "إجمالي المنتجات: " + formatCurrency(subtotal) + "\n" +
-    "سعر التوصيل: " + formatCurrency(delivery) + "\n" +
-    "الإجمالي النهائي: " + formatCurrency(subtotal + delivery);
+    "الإجمالي النهائي: " + formatCurrency(subtotal);
 
   const whatsappURL =
     "https://wa.me/" +
@@ -711,6 +745,7 @@ document.addEventListener("DOMContentLoaded", function() {
     filterProducts("all", allButton);
   }
 
+  hideDeliveryLine();
   loadProductsFromSheet();
 });
 
