@@ -44,7 +44,13 @@ function initializeAdminCredentials() {
   }
 }
 
+
 function getAdminCredentials() {
+  return {
+    username: "admin",
+    password: "healthcare"
+  };
+}
   const saved = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
   if (!saved) {
     initializeAdminCredentials();
