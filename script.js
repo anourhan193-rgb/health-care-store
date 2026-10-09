@@ -290,11 +290,14 @@ function handleSearchInput() {
   renderProducts();
 }
 
+
 function addToCart(productId) {
-  const product = findProductById(productId);
+  var product = findProductById(productId);
   if (!product) return;
 
-  const existing = cart.find(item => String(item.id) === String(productId));
+  var existing = cart.find(function(item) {
+    return String(item.id) === String(productId);
+  });
 
   if (existing) {
     existing.quantity++;
@@ -308,13 +311,18 @@ function addToCart(productId) {
 }
 
 function updateQuantity(productId, change) {
-  const item = cart.find(entry => String(entry.id) === String(productId));
+  var item = cart.find(function(entry) {
+    return String(entry.id) === String(productId);
+  });
+
   if (!item) return;
 
   item.quantity += change;
 
   if (item.quantity <= 0) {
-    cart = cart.filter(entry => String(entry.id) !== String(productId));
+    cart = cart.filter(function(entry) {
+      return String(entry.id) !== String(productId);
+    });
   }
 
   saveCart();
@@ -323,68 +331,97 @@ function updateQuantity(productId, change) {
 }
 
 function removeFromCart(productId) {
-  cart = cart.filter(item => String(item.id) !== String(productId));
+  cart = cart.filter(function(item) {
+    return String(item.id) !== String(productId);
+  });
+
   saveCart();
   renderCart();
   updateCartBadge();
 }
 
 function renderCart() {
-  const container = document.getElementById("cartItems");
-  const subtotalEl = document.getElementById("subtotal");
-  const deliveryEl = document.getElementById("delivery");
-  const totalEl = document.getElementById("total");
+  var container = document.getElementById("cartItems");
+  var subtotalEl = document.getElementById("subtotal");
+  var deliveryEl = document.getElementById("delivery");
+  var totalEl = document.getElementById("total");
 
   if (!container || !subtotalEl || !deliveryEl || !totalEl) return;
 
-  cart = cart.filter(item => findProductById(item.id));
+  cart = cart.filter(function(item) {
+    return findProductById(item.id);
+  });
 
-  if (!cart.length) {
-    container.innerHTML = `<div class="empty-message">السلة فارغة حاليًا 🛒</div>`;
+  if (cart.length === 0) {
+    container.innerHTML =
+      '<div class="empty-message">السلة فارغة حاليًا 🛒</div>';
+
     subtotalEl.textContent = formatCurrency(0);
     deliveryEl.textContent = formatCurrency(0);
     totalEl.textContent = formatCurrency(0);
+
     saveCart();
     return;
   }
 
-  let subtotal = 0;
+  var subtotal = 0;
+  var html = "";
 
-  container.innerHTML = cart.map(item => {
-    const product = findProductById(item.id);
-    if (!product) return "";
+  cart.forEach(function(item) {
+    var product = findProductById(item.id);
+    if (!product) return;
 
-    subtotal += product.price * item.quantity;
+    var price = Number(product.price) || 0;
+    var quantity = Number(item.quantity) || 1;
 
-    return `
-      <div class="cart-item">
-        <div class="cart-item-info">
-          ${
-            product.image
-              ? `<img class="cart-item-thumb"
-                      src="${escapeHTML(product.image)}"
-                      alt="${escapeHTML(product.name)}">`
-              : ""
-          }
-          <div class="cart-item-text">
-            <h4>${escapeHTML(product.name)}</h4>
-            <p>${formatCurrency(product.price)} لكل قطعة</p>
-          </div>
-        </div>
-        <div class="cart-item-actions">
-          <div class="quantity-box">
-            <button onclick="updateQuantity('${escapeHTML(product.id)}',-1)">-</button>
-            <span>${item.quantity}</span>
-            <button onclick="updateQuantity('${escapeHTML(product.id)}',1)">+</button>
-          </div>
-          <button class="remove-button"
-            onclick="removeFromCart('${escapeHTML(product.id)}')">حذف</button>
-        </div>
-      </div>
-    `;
-  }).join("");
+    subtotal += price * quantity;
 
-  const delivery = subtotal > 0 ? 15 : 0;
+    var imageHTML = "";
+
+    if (product.image) {
+      imageHTML =
+        '<img class="cart-item-thumb" src="' +
+        escapeHTML(product.image) +
+        '" alt="' + escapeHTML(product.name) + '">';
+    }
+
+    html +=
+      '<div class="cart-item">' +
+        '<div class="cart-item-info">' +
+          imageHTML +
+          '<div class="cart-item-text">' +
+            '<h4>' + escapeHTML(product.name) + '</h4>' +
+            '<p>' + formatCurrency(price) + ' لكل قطعة</p>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cart-item-actions">' +
+          '<div class="quantity-box">' +
+            '<button type="button" data-action="decrease" data-id="' +
+              escapeHTML(product.id) + '">-</button>' +
+            '<span>' + quantity + '</span>' +
+            '<button type="button" data-action="increase" data-id="' +
+              escapeHTML(product.id) + '">+</button>' +
+          '</div>' +
+          '<button type="button" class="remove-button" data-action="remove" data-id="' +
+            escapeHTML(product.id) + '">حذف</button>' +
+        '</div>' +
+      '</div>';
+  });
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-action]").forEach(function(button) {
+    button.addEventListener("click", function() {
+      var id = button.getAttribute("data-id");
+      var action = button.getAttribute("data-action");
+
+      if (action === "increase") updateQuantity(id, 1);
+      if (action === "decrease") updateQuantity(id, -1);
+      if (action === "remove") removeFromCart(id);
+    });
+  });
+
+  var delivery = subtotal > 0 ? 15 : 0;
 
   subtotalEl.textContent = formatCurrency(subtotal);
   deliveryEl.textContent = formatCurrency(delivery);
@@ -394,10 +431,14 @@ function renderCart() {
 }
 
 function submitOrder() {
-  const name = document.getElementById("customerName")?.value.trim();
-  const phone = document.getElementById("customerPhone")?.value.trim();
-  const address = document.getElementById("customerAddress")?.value.trim();
-  const payment = document.querySelector('input[name="payment"]:checked');
+  var name = document.getElementById("customerName");
+  var phone = document.getElementById("customerPhone");
+  var address = document.getElementById("customerAddress");
+  var payment = document.querySelector('input[name="payment"]:checked');
+
+  name = name ? name.value.trim() : "";
+  phone = phone ? phone.value.trim() : "";
+  address = address ? address.value.trim() : "";
 
   if (!name || !phone || !address || !payment) {
     alert("يرجى إدخال الاسم ورقم الهاتف والعنوان وطريقة الدفع.");
@@ -409,87 +450,105 @@ function submitOrder() {
     return;
   }
 
-  const subtotal = cart.reduce((sum, item) => {
-    const product = findProductById(item.id);
-    return sum + (product ? product.price * item.quantity : 0);
-  }, 0);
+  var subtotal = 0;
+  var itemsText = "";
 
-  const delivery = subtotal > 0 ? 15 : 0;
+  cart.forEach(function(item) {
+    var product = findProductById(item.id);
+    if (!product) return;
 
-  const itemsText = cart.map(item => {
-    const product = findProductById(item.id);
-    return `- ${product ? product.name : "منتج"} × ${item.quantity}`;
-  }).join("\n");
+    var price = Number(product.price) || 0;
+    var quantity = Number(item.quantity) || 1;
 
-  const message = `
-*طلب جديد من Health Care*
+    subtotal += price * quantity;
 
-الاسم: ${name}
-الهاتف: ${phone}
-العنوان: ${address}
-طريقة الدفع: ${payment.value}
+    itemsText +=
+      "- " + product.name + " × " + quantity + "\n";
+  });
 
-المنتجات:
-${itemsText}
+  if (!itemsText) {
+    alert("لا توجد منتجات صالحة في السلة.");
+    return;
+  }
 
-إجمالي المنتجات: ${formatCurrency(subtotal)}
-سعر التوصيل: ${formatCurrency(delivery)}
-الإجمالي النهائي: ${formatCurrency(subtotal + delivery)}
-`.trim();
+  var delivery = subtotal > 0 ? 15 : 0;
+
+  var message =
+    "*طلب جديد من Health Care*\n\n" +
+    "الاسم: " + name + "\n" +
+    "الهاتف: " + phone + "\n" +
+    "العنوان: " + address + "\n" +
+    "طريقة الدفع: " + payment.value + "\n\n" +
+    "المنتجات:\n" + itemsText + "\n" +
+    "إجمالي المنتجات: " + formatCurrency(subtotal) + "\n" +
+    "سعر التوصيل: " + formatCurrency(delivery) + "\n" +
+    "الإجمالي النهائي: " + formatCurrency(subtotal + delivery);
 
   window.open(
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`,
+    "https://wa.me/" + WHATSAPP_NUMBER +
+    "?text=" + encodeURIComponent(message),
     "_blank"
   );
 }
 
 async function loadProductsFromSheet() {
   try {
-    const response = await fetch(SHEET_CSV_URL, { cache: "no-store" });
-    if (!response.ok) throw new Error("تعذر تحميل الشيت.");
+    var response = await fetch(SHEET_CSV_URL, {
+      cache: "no-store"
+    });
 
-    const csv = await response.text();
-    const loaded = convertSheetToProducts(csv);
+    if (!response.ok) {
+      throw new Error("تعذر تحميل Google Sheets.");
+    }
+
+    var csv = await response.text();
+    var loaded = convertSheetToProducts(csv);
+
+    if (!loaded || typeof loaded !== "object") {
+      throw new Error("تنسيق بيانات المنتجات غير صحيح.");
+    }
 
     products = loaded;
 
-    // إزالة السلة القديمة التي تحتوي على منتجات لم تعد موجودة
-    cart = cart.filter(item => findProductById(item.id));
-    saveCart();
+    cart = cart.filter(function(item) {
+      return findProductById(item.id);
+    });
 
+    saveCart();
     renderProducts();
     renderCart();
     updateCartBadge();
 
   } catch (error) {
-    console.error(error);
-    products = { health: [], science: [], laboratory: [] };
-    renderProducts();
-    renderCart();
-    updateCartBadge();
+    console.error("خطأ تحميل المنتجات:", error);
 
-    alert("تعذر تحميل المنتجات. تأكدي أن Google Sheets منشور على الويب.");
+    alert(
+      "تعذر تحميل المنتجات من Google Sheets. " +
+      "راجعي رابط الشيت وطريقة نشره."
+    );
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  const searchInput = document.getElementById("searchInput");
+document.addEventListener("DOMContentLoaded", function() {
+  var searchInput = document.getElementById("searchInput");
 
   if (searchInput) {
     searchInput.addEventListener("input", handleSearchInput);
   }
 
-  document.querySelectorAll(".category-button").forEach(button => {
-    button.addEventListener("click", () => {
+  document.querySelectorAll(".category-button").forEach(function(button) {
+    button.addEventListener("click", function() {
       filterProducts(button.dataset.category, button);
     });
   });
 
-  const allButton = document.querySelector(
+  var allButton = document.querySelector(
     '.category-button[data-category="all"]'
   );
 
-  if (allButton) filterProducts("all", allButton);
+  if (allButton) {
+    filterProducts("all", allButton);
+  }
 
   loadProductsFromSheet();
 });
@@ -500,4 +559,3 @@ window.removeFromCart = removeFromCart;
 window.submitOrder = submitOrder;
 window.filterProducts = filterProducts;
 window.handleSearchInput = handleSearchInput;
-```
