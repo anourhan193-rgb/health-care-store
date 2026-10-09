@@ -34,6 +34,15 @@ function initializeAdminCredentials() {
     }));
   }
 }
+  const saved = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
+
+  if (!saved) {
+    localStorage.setItem(ADMIN_CREDENTIALS_KEY, JSON.stringify({
+      username: DEFAULT_USERNAME,
+      password: DEFAULT_PASSWORD
+    }));
+  }
+}
 
 function getAdminCredentials() {
   const saved = localStorage.getItem(ADMIN_CREDENTIALS_KEY);
