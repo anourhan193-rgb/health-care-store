@@ -19,8 +19,9 @@ let cart = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
 let activeCategory = "all";
 let searchText = "";
 
+
 function formatCurrency(value) {
-  return `${Number(value || 0).toLocaleString("ar-EG")} جنيه`;
+  return Number(value || 0).toLocaleString("ar-EG") + " جنيه";
 }
 
 function escapeHTML(value) {
