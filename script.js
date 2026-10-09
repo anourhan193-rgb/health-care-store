@@ -214,7 +214,7 @@ function getCartCount() {
 
 function renderProducts() {
   categoryKeys.forEach(category => {
-    const container = document.getElementById(`${category}Products`);
+    const container = document.getElementById(category + "Products");
     if (!container) return;
 
     const filtered = (products[category] || []).filter(product => {
