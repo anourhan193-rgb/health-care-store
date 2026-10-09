@@ -1,4 +1,5 @@
 
+
 const CART_KEY = "healthCareCart";
 
 const SHEET_CSV_URL =
@@ -27,7 +28,12 @@ let activeCategory = "all";
 let searchText = "";
 
 function formatCurrency(value) {
-  return Number(value || 0).toLocaleString("ar-EG") + " جنيه";
+  const amount = Number(value);
+
+  return (
+    (Number.isFinite(amount) ? amount : 0).toLocaleString("ar-EG") +
+    " جنيه"
+  );
 }
 
 function escapeHTML(value) {
@@ -55,12 +61,16 @@ function safeImageURL(value) {
 }
 
 function normalize(value) {
-  return String(value || "")
+  return String(value ?? "")
     .replace(/^\uFEFF/, "")
     .trim()
     .toLowerCase()
     .replace(/[أإآ]/g, "ا")
     .replace(/ة/g, "ه");
+}
+
+function cleanColumnName(value) {
+  return normalize(value).replace(/[\s_\-()（）:：]/g, "");
 }
 
 function mapCategory(value) {
@@ -140,40 +150,43 @@ function parseCSV(text) {
   return rows;
 }
 
-
 function findColumn(headers, names, fallback) {
-  function clean(value) {
-    return String(value ?? "")
-      .trim()
-      .replace(/\s+/g, "")
-      .toLowerCase();
-  }
+  const normalizedHeaders = headers.map(cleanColumnName);
+  const normalizedNames = names.map(cleanColumnName);
 
-  const normalizedNames = names.map(clean);
-
-  const index = headers.findIndex(function(header) {
-    return normalizedNames.includes(clean(header));
+  let index = normalizedHeaders.findIndex(function(header) {
+    return normalizedNames.includes(header);
   });
+
+  if (index === -1) {
+    index = normalizedHeaders.findIndex(function(header) {
+      return normalizedNames.some(function(name) {
+        return name !== "" && header.includes(name);
+      });
+    });
+  }
 
   return index === -1 ? fallback : index;
 }
 
 function convertPrice(value) {
-  const digits = String(value || "")
+  let digits = String(value ?? "").trim();
+
+  digits = digits
     .replace(/[٠-٩]/g, function(digit) {
-      return "٠١٢٣٤٥٦٧٨٩".indexOf(digit);
+      return String("٠١٢٣٤٥٦٧٨٩".indexOf(digit));
     })
     .replace(/[۰-۹]/g, function(digit) {
-      return "۰۱۲۳۴۵۶۷۸۹".indexOf(digit);
-    });
+      return String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit));
+    })
+    .replace(/٫/g, ".")
+    .replace(/[٬,،\s]/g, "")
+    .replace(/جنيه|ج\.م|EGP|LE/gi, "")
+    .replace(/[^\d.-]/g, "");
 
-  const price = Number(
-    digits
-      .replace(/جنيه|ج\.م|EGP/gi, "")
-      .replace(/[,\s،]/g, "")
-  );
+  const price = Number(digits);
 
-  return Number.isFinite(price) && price >= 0
+  return digits !== "" && Number.isFinite(price) && price >= 0
     ? price
     : 0;
 }
@@ -203,12 +216,12 @@ function convertSheetToProducts(csvText) {
     1
   );
 
-  
-const priceIndex = findColumn(
-  headers,
-  ["السعر", "price", "Price", "سعر المنتج"],
-  2
-);
+  const priceIndex = findColumn(
+    headers,
+    ["السعر", "price", "سعر المنتج", "سعر"],
+    2
+  );
+
   const imageIndex = findColumn(
     headers,
     ["رابط الصورة", "الصورة", "image", "image url"],
@@ -233,11 +246,13 @@ const priceIndex = findColumn(
     if (!name) return;
 
     const category = mapCategory(row[categoryIndex]);
+    const rawPrice = row[priceIndex];
+    const price = convertPrice(rawPrice);
 
     result[category].push({
       id: createId(category, name, index),
       name: name,
-      price: convertPrice(row[priceIndex]),
+      price: price,
       image: safeImageURL(row[imageIndex]),
       description: descriptionIndex >= 0
         ? String(row[descriptionIndex] || "").trim()
@@ -338,9 +353,9 @@ function renderProducts() {
           '<div class="product-body">' +
             '<h3>' + escapeHTML(product.name) + '</h3>' +
             '<p>' + escapeHTML(product.description || "") + '</p>' +
-            '<span class="price">' +
-              formatCurrency(product.price) +
-            '</span>' +
+            '<div class="price" style="display:block;visibility:visible;opacity:1;color:#c62828;font-size:18px;font-weight:700;margin:12px 0;">' +
+              escapeHTML(formatCurrency(product.price)) +
+            '</div>' +
             '<button class="add-button" data-product-id="' +
               escapeHTML(product.id) +
               '" type="button">' +
@@ -594,7 +609,9 @@ function submitOrder() {
     subtotal += price * quantity;
 
     itemsText +=
-      "- " + product.name + " × " + quantity + "\n";
+      "- " + product.name +
+      " × " + quantity +
+      " — " + formatCurrency(price * quantity) + "\n";
   });
 
   if (!itemsText) {
@@ -648,6 +665,9 @@ async function loadProductsFromSheet() {
     renderCart();
     updateCartBadge();
 
+    console.log("تم تحميل المنتجات:", getAllProducts().length);
+    console.log("أسماء أعمدة الشيت:", parseCSV(csv)[0]);
+
   } catch (error) {
     console.error("خطأ تحميل المنتجات:", error);
 
@@ -658,18 +678,20 @@ async function loadProductsFromSheet() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
   const searchInput = document.getElementById("searchInput");
 
   if (searchInput) {
     searchInput.addEventListener("input", handleSearchInput);
   }
 
-  document.querySelectorAll(".category-button").forEach(function (button) {
-    button.addEventListener("click", function () {
-      filterProducts(button.dataset.category, button);
-    });
-  });
+  document.querySelectorAll(".category-button").forEach(
+    function(button) {
+      button.addEventListener("click", function() {
+        filterProducts(button.dataset.category, button);
+      });
+    }
+  );
 
   const allButton = document.querySelector(
     '.category-button[data-category="all"]'
@@ -688,4 +710,3 @@ window.removeFromCart = removeFromCart;
 window.submitOrder = submitOrder;
 window.filterProducts = filterProducts;
 window.handleSearchInput = handleSearchInput;
-
