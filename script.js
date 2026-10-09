@@ -217,40 +217,27 @@ function renderProducts() {
     const container = document.getElementById(category + "Products");
     if (!container) return;
 
-    const filtered = (products[category] || []).filter(product => {
-      const matches = product.name.toLowerCase().includes(searchText);
-      return matches &&
-        (activeCategory === "all" || product.category === activeCategory);
-    });
+   
+container.innerHTML = filtered.map(function(product) {
+  const imageHTML = product.image
+    ? '<img class="product-image" src="' +
+      escapeHTML(product.image) +
+      '" alt="' + escapeHTML(product.name) +
+      '" loading="lazy" onerror="this.style.display=\'none\'">'
+    : '';
 
-    if (!filtered.length) {
-      container.innerHTML = `
-        <div class="empty-message" style="grid-column:1/-1">
-          لا توجد منتجات في هذا القسم حاليًا
-        </div>
-      `;
-      return;
-    }
-
-  
-    container.innerHTML = filtered.map(function(product) {
-      const imageHTML = product.image
-        ? '<img class="product-image" src="' + escapeHTML(product.image) +
-          '" alt="' + escapeHTML(product.name) +
-          '" loading="lazy" onerror="this.style.display=\'none\'">'
-        : '';
-
-      return '<article class="product-card">' +
-        imageHTML +
-        '<div class="product-body">' +
-          '<h3>' + escapeHTML(product.name) + '</h3>' +
-          '<p>' + escapeHTML(product.description) + '</p>' +
-          '<span class="price">' + formatCurrency(product.price) + '</span>' +
-          '<button class="add-button" onclick="addToCart(\'' +
-            escapeHTML(product.id) + '\')">أضف إلى السلة</button>' +
-        '</div>' +
-      '</article>';
-    }).join("");
+  return '<article class="product-card">' +
+    imageHTML +
+    '<div class="product-body">' +
+      '<h3>' + escapeHTML(product.name) + '</h3>' +
+      '<p>' + escapeHTML(product.description) + '</p>' +
+      '<span class="price">' + formatCurrency(product.price) + '</span>' +
+      '<button class="add-button" onclick="addToCart(\'' +
+        escapeHTML(product.id) +
+        '\')">أضف إلى السلة</button>' +
+    '</div>' +
+  '</article>';
+}).join("");
   });
 }
 
