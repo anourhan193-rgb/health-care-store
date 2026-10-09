@@ -169,26 +169,36 @@ function findColumn(headers, names, fallback) {
   return index === -1 ? fallback : index;
 }
 
-function convertPrice(value) {
-  let digits = String(value ?? "").trim();
 
-  digits = digits
-    .replace(/[٠-٩]/g, function(digit) {
-      return String("٠١٢٣٤٥٦٧٨٩".indexOf(digit));
-    })
-    .replace(/[۰-۹]/g, function(digit) {
-      return String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit));
-    })
-    .replace(/٫/g, ".")
-    .replace(/[٬,،\s]/g, "")
+function convertPrice(value) {
+  let text = String(value ?? "").trim();
+
+  const arabicDigits = "٠١٢٣٤٥٦٧٨٩";
+  const persianDigits = "۰۱۲۳۴۵۶۷۸۹";
+
+  text = text.replace(/[٠-٩۰-۹]/g, function(digit) {
+    const arabicIndex = arabicDigits.indexOf(digit);
+
+    if (arabicIndex !== -1) {
+      return String(arabicIndex);
+    }
+
+    return String(persianDigits.indexOf(digit));
+  });
+
+  text = text
     .replace(/جنيه|ج\.م|EGP|LE/gi, "")
+    .replace(/[٬,،\s]/g, "")
+    .replace(/٫/g, ".")
     .replace(/[^\d.-]/g, "");
 
-  const price = Number(digits);
+  if (!/\d/.test(text)) {
+    return 0;
+  }
 
-  return digits !== "" && Number.isFinite(price) && price >= 0
-    ? price
-    : 0;
+  const price = Number(text);
+
+  return Number.isFinite(price) && price >= 0 ? price : 0;
 }
 
 function createId(category, name, index) {
