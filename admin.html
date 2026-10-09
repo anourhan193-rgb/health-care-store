@@ -1,493 +1,385 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة الإدارة | Health Care</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --primary: #164d85;
-      --primary-dark: #0d365f;
-      --secondary: #e53935;
-      --secondary-dark: #c62828;
-      --soft-blue: #ebf8ff;
-      --soft-bg: #f4fbff;
-      --white: #ffffff;
-      --text: #173b63;
-      --muted: #55789b;
-      --border: #d7ebf6;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: "Cairo", sans-serif;
-      background: var(--soft-bg);
-      color: var(--text);
-      direction: rtl;
-      line-height: 1.8;
-    }
-
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      padding: 20px;
-    }
-
-    .login-box {
-      width: 100%;
-      max-width: 420px;
-      background: var(--white);
-      border-radius: 18px;
-      padding: 34px 28px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
-    }
-
-    .login-box h1 {
-      color: var(--primary);
-      text-align: center;
-      margin-bottom: 24px;
-      font-size: 28px;
-    }
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--primary);
-      font-weight: 700;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 12px 14px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 15px;
-      font-family: "Cairo", sans-serif;
-      outline: none;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(22, 77, 133, 0.08);
-    }
-
-    .form-group textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
-
-    .login-btn,
-    .btn {
-      border: none;
-      border-radius: 10px;
-      padding: 12px 18px;
-      font-family: "Cairo", sans-serif;
-      font-weight: 700;
-      cursor: pointer;
-      transition: 0.2s ease;
-    }
-
-    .login-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-      color: var(--white);
-      font-size: 16px;
-      margin-top: 10px;
-    }
-
-    .login-btn:hover { transform: translateY(-2px); }
-
-    .error {
-      color: var(--secondary);
-      font-weight: 700;
-      text-align: center;
-      margin-top: 12px;
-      min-height: 22px;
-    }
-
-    .admin-panel {
-      display: none;
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 28px 18px 50px;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--white);
-      border-radius: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-      padding: 20px 24px;
-      margin-bottom: 22px;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .topbar h2 {
-      color: var(--primary);
-      font-size: 24px;
-    }
-
-    .topbar-actions {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .logout-btn {
-      background: var(--secondary);
-      color: var(--white);
-      padding: 12px 20px;
-    }
-
-    .logout-btn:hover {
-      background: var(--secondary-dark);
-    }
-
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .tab-btn {
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--primary);
-      font-weight: 700;
-      cursor: pointer;
-      padding: 10px 16px;
-      transition: 0.2s ease;
-    }
-
-    .tab-btn.active {
-      background: #eef3ff;
-      border-color: #bad0ff;
-    }
-
-    .panel {
-      display: none;
-      background: var(--white);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-      border-radius: 16px;
-      padding: 26px;
-    }
-
-    .panel.active { display: block; }
-
-    .panel h3 {
-      color: var(--primary);
-      margin-bottom: 18px;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-    }
-
-    .grid .full {
-      grid-column: 1 / -1;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
-      flex-wrap: wrap;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: var(--white);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-dark);
-    }
-
-    .btn-danger {
-      background: var(--secondary);
-      color: var(--white);
-    }
-
-    .btn-danger:hover {
-      background: var(--secondary-dark);
-    }
-
-    .btn-secondary {
-      background: #edf1f5;
-      color: var(--text);
-    }
-
-    .btn-success {
-      background: #20b26b;
-      color: var(--white);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
-
-    th, td {
-      text-align: right;
-      padding: 12px 10px;
-      border-bottom: 1px solid #eff3f8;
-      vertical-align: top;
-    }
-
-    th {
-      background: #f4f8ff;
-      color: var(--primary);
-      font-weight: 700;
-    }
-
-    img.product-thumb {
-      width: 72px;
-      height: 72px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-
-    .mini-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .mini-actions .btn {
-      font-size: 12px;
-      padding: 8px 12px;
-    }
-
-    .toast {
-      display: none;
-      background: #ecfdf5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 18px;
-      font-weight: 700;
-    }
-
-    .toast.show {
-      display: block;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .modal.show {
-      display: flex;
-    }
-
-    .modal-content {
-      background: var(--white);
-      border-radius: 18px;
-      padding: 24px;
-      width: min(600px, 100%);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .empty-state {
-      padding: 30px;
-      text-align: center;
-      color: var(--muted);
-    }
-
-    @media (max-width: 700px) {
-      .grid {
-        grid-template-columns: 1fr;
-      }
-      .topbar {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .topbar-actions {
-        flex-direction: column;
-        width: 100%;
-      }
-      .topbar-actions .btn {
-        width: 100%;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحة تحكم Health Care</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f8fc;color:#173b63}
+header{background:linear-gradient(120deg,#164d85,#2387b9);color:white;padding:22px;text-align:center}
+header h1{margin:0 0 8px}
+.container{max-width:1100px;margin:25px auto;padding:0 15px}
+.card{background:white;padding:22px;border-radius:15px;margin-bottom:20px;box-shadow:0 4px 18px #164d8512}
+input,select,textarea{width:100%;padding:12px;margin:6px 0 14px;border:1px solid #cbdfea;border-radius:8px;font-size:15px}
+label{font-weight:bold}
+button{border:0;border-radius:8px;padding:11px 16px;cursor:pointer;font-weight:bold;margin:3px}
+.primary{background:#164d85;color:white}
+.danger{background:#e53935;color:white}
+.secondary{background:#e8f4fb;color:#164d85}
+.green{background:#16865a;color:white}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.full{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:12px;border-bottom:1px solid #e4edf3;text-align:right}
+th{background:#eaf5fc}
+img.thumb{width:55px;height:55px;object-fit:cover;border-radius:7px}
+.table-wrap{overflow-x:auto}
+.hidden{display:none!important}
+.notice{padding:12px;background:#eaf7ef;border-radius:8px;margin-bottom:12px}
+.error{color:#d52222;margin:10px 0}
+.top-actions{display:flex;gap:8px;flex-wrap:wrap}
+h2{color:#164d85}
+@media(max-width:600px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.card{padding:15px}}
+</style>
 </head>
 <body>
 
-  <!-- LOGIN FORM -->
-  <div class="login-container" id="loginWrap">
-    <div class="login-box">
-      <h1>لوحة الإدارة</h1>
-      <div class="form-group">
-        <label>اسم المستخدم</label>
-        <input id="adminUsername" type="text" placeholder="admin" />
-      </div>
-      <div class="form-group">
-        <label>كلمة المرور</label>
-        <input id="adminPassword" type="password" placeholder="أدخل كلمة المرور" />
-      </div>
-      <button class="btn login-btn" onclick="loginAdmin()">دخول</button>
-      <div id="loginError" class="error"></div>
-    </div>
-  </div>
+<header>
+  <h1>Health Care</h1>
+  <div>لوحة التحكم وإدارة المنتجات</div>
+</header>
 
-  <!-- ADMIN PANEL -->
-  <div class="admin-panel" id="adminPanel">
-    <div class="topbar">
-      <h2>Health Care | إدارة المنتجات</h2>
-      <div class="topbar-actions">
-        <button class="btn btn-secondary" onclick="changePassword()">تغيير كلمة المرور</button>
-        <button class="btn logout-btn" onclick="logoutAdmin()">تسجيل الخروج</button>
+<div class="container">
+
+  <section class="card" id="loginBox">
+    <h2>تسجيل الدخول</h2>
+    <form id="loginForm">
+      <label for="username">اسم المستخدم</label>
+      <input id="username" autocomplete="username" required>
+      <label for="password">كلمة المرور</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="primary" type="submit">دخول</button>
+      <p class="error" id="loginError"></p>
+    </form>
+  </section>
+
+  <main id="dashboard" class="hidden">
+    <div class="card">
+      <h2>إدارة المتجر</h2>
+      <div class="top-actions">
+        <button class="secondary" id="exportBtn">تصدير نسخة احتياطية</button>
+        <button class="secondary" id="importBtn">استيراد نسخة احتياطية</button>
+        <button class="danger" id="logoutBtn">تسجيل الخروج</button>
       </div>
-    </div>
-
-    <div id="toast" class="toast"></div>
-
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="add">➕ إضافة منتج</button>
-      <button class="tab-btn" data-tab="manage">📋 إدارة المنتجات</button>
-      <button class="tab-btn" data-tab="backup">💾 نسخ احتياطي</button>
+      <input type="file" id="importFile" accept=".json" class="hidden">
+      <p id="status" class="notice">يمكنك إضافة المنتجات وتعديلها وحذفها.</p>
     </div>
 
-    <!-- ADD PRODUCT TAB -->
-    <div id="addPanel" class="panel active">
-      <h3>إضافة منتج جديد</h3>
-      <form id="addProductForm">
+    <section class="card">
+      <h2 id="formTitle">إضافة منتج جديد</h2>
+      <form id="productForm">
+        <input type="hidden" id="productId">
         <div class="grid">
-          <div class="form-group">
-            <label>اسم المنتج</label>
-            <input type="text" id="productName" required />
+          <div>
+            <label for="name">اسم المنتج</label>
+            <input id="name" required>
           </div>
-
-          <div class="form-group">
-            <label>السعر</label>
-            <input type="number" id="productPrice" min="0" required />
+          <div>
+            <label for="price">السعر بالجنيه</label>
+            <input id="price" type="number" min="0" step="0.01" required>
           </div>
-
-          <div class="form-group">
-            <label>الفئة</label>
-            <select id="productCategory" required>
-              <option value="">اختر الفئة</option>
+          <div>
+            <label for="category">القسم</label>
+            <select id="category" required>
               <option value="health">الرعاية الصحية</option>
-              <option value="science">الكليات العلمية</option>
-              <option value="laboratory">معامل التحاليل الطبية</option>
+              <option value="science">مستلزمات الكليات العلمية</option>
+              <option value="laboratory">مستلزمات معامل التحاليل الطبية</option>
             </select>
           </div>
-
-          <div class="form-group">
-            <label>رمز المنتج</label>
-            <input type="text" id="productIcon" maxlength="2" required />
+          <div>
+            <label for="icon">رمز المنتج (اختياري)</label>
+            <input id="icon" placeholder="🔬">
           </div>
-
-          <div class="form-group full">
-            <label>الوصف</label>
-            <textarea id="productDescription" required></textarea>
+          <div class="full">
+            <label for="description">وصف المنتج</label>
+            <textarea id="description" rows="3"></textarea>
           </div>
-
-          <div class="form-group full">
-            <label>رابط الصورة</label>
-            <input type="url" id="productImage" required />
+          <div class="full">
+            <label for="image">رابط صورة المنتج</label>
+            <input id="image" type="url" placeholder="https://example.com/image.jpg">
           </div>
         </div>
-
-        <div class="actions">
-          <button type="button" class="btn btn-secondary" onclick="resetAddForm()">مسح</button>
-          <button type="submit" class="btn btn-primary">إضافة المنتج</button>
-        </div>
+        <button class="primary" type="submit" id="saveBtn">إضافة المنتج</button>
+        <button class="secondary" type="button" id="cancelBtn">إلغاء التعديل</button>
       </form>
-    </div>
+    </section>
 
-    <!-- MANAGE PRODUCTS TAB -->
-    <div id="managePanel" class="panel">
-      <h3>إدارة المنتجات</h3>
-      <div id="productsTableContainer"></div>
-    </div>
-
-    <!-- BACKUP TAB -->
-    <div id="backupPanel" class="panel">
-      <h3>النسخ الاحتياطي</h3>
-      <div class="actions">
-        <button class="btn btn-success" onclick="exportProducts()">📥 تصدير JSON</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('importInput').click()">📤 استيراد JSON</button>
-        <button class="btn btn-danger" onclick="resetToDefaultProducts()">🔄 إعادة تعيين</button>
+    <section class="card">
+      <h2>المنتجات الحالية</h2>
+      <label for="filter">عرض قسم محدد</label>
+      <select id="filter">
+        <option value="all">كل الأقسام</option>
+        <option value="health">الرعاية الصحية</option>
+        <option value="science">الكليات العلمية</option>
+        <option value="laboratory">معامل التحاليل الطبية</option>
+      </select>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>الصورة</th>
+              <th>المنتج</th>
+              <th>القسم</th>
+              <th>السعر</th>
+              <th>الإجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="productsList"></tbody>
+        </table>
       </div>
-      <input type="file" id="importInput" style="display:none" accept=".json" onchange="importProducts(event)" />
-    </div>
-  </div>
+      <p id="emptyMessage" class="hidden">لا توجد منتجات في هذا القسم.</p>
+    </section>
+  </main>
+</div>
 
-  <!-- EDIT MODAL -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <h3>تعديل المنتج</h3>
-      <form id="editProductForm">
-        <input type="hidden" id="editProductId" />
+<script>
+"use strict";
 
-        <div class="form-group">
-          <label>اسم المنتج</label>
-          <input type="text" id="editProductName" required />
-        </div>
+const USERNAME = "admin";
+const PASSWORD = "healthcare";
+const STORAGE_KEY = "healthCareProducts";
 
-        <div class="form-group">
-          <label>السعر</label>
-          <input type="number" id="editProductPrice" min="0" required />
-        </div>
+const categoryNames = {
+  health: "الرعاية الصحية",
+  science: "الكليات العلمية",
+  laboratory: "معامل التحاليل الطبية"
+};
 
-        <div class="form-group">
-          <label>الوصف</label>
-          <textarea id="editProductDescription" required></textarea>
-        </div>
+const initialProducts = {
+  health: [
+    {id:1,name:"كمادات حرارية",price:45,icon:"🧊",image:"https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=400&q=80",description:"كمادات للاستخدام المنزلي",category:"health"},
+    {id:2,name:"مقياس ضغط",price:180,icon:"🩺",image:"https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=400&q=80",description:"قياس الضغط المنزلي",category:"health"}
+  ],
+  science: [
+    {id:5,name:"مجهر صغير",price:220,icon:"🔬",image:"https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=400&q=80",description:"للمختبرات التعليمية",category:"science"}
+  ],
+  laboratory: [
+    {id:9,name:"قمع زجاجي",price:70,icon:"🧫",image:"https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=400&q=80",description:"أداة للمختبرات الطبية",category:"laboratory"}
+  ]
+};
 
-        <div class="form-group">
-          <label>رمز المنتج</label>
-          <input type="text" id="editProductIcon" maxlength="2" required />
-        </div>
+const $ = id => document.getElementById(id);
 
-        <div class="form-group">
-          <label>رابط الصورة</label>
-          <input type="url" id="editProductImage" required />
-        </div>
+function readProducts() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProducts));
+      return structuredClone(initialProducts);
+    }
 
-        <div class="actions">
-          <button type="button" class="btn btn-danger" onclick="deleteFromModal()">🗑️ حذف المنتج</button>
-          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">إلغاء</button>
-          <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
-        </div>
-      </form>
-    </div>
-  </div>
+    const data = JSON.parse(saved);
+    if (!data || typeof data !== "object" || Array.isArray(data)) {
+      throw new Error("Invalid product data");
+    }
 
- <script src="admin.js?v=2"></script>
+    for (const key of Object.keys(categoryNames)) {
+      if (!Array.isArray(data[key])) data[key] = [];
+    }
+    return data;
+  } catch (error) {
+    alert("تعذر قراءة المنتجات. احتفظي بنسخة احتياطية قبل أي تعديل.");
+    return {health:[],science:[],laboratory:[]};
+  }
+}
+
+function saveProducts(data) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    return true;
+  } catch (error) {
+    alert("تعذر حفظ البيانات في المتصفح.");
+    return false;
+  }
+}
+
+function allProducts(data) {
+  return Object.values(data).flat();
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[char]);
+}
+
+function showStatus(message) {
+  $("status").textContent = message;
+}
+
+function renderProducts() {
+  const data = readProducts();
+  const filter = $("filter").value;
+  const products = allProducts(data).filter(product =>
+    filter === "all" || product.category === filter
+  );
+
+  $("productsList").innerHTML = products.map(product => `
+    <tr>
+      <td>${product.image ? `<img class="thumb" src="${escapeHTML(product.image)}" alt="">` : "—"}</td>
+      <td>${escapeHTML(product.name)}</td>
+      <td>${escapeHTML(categoryNames[product.category] || product.category)}</td>
+      <td>${escapeHTML(product.price)} ج.م</td>
+      <td>
+        <button class="primary" data-edit="${Number(product.id)}">تعديل</button>
+        <button class="danger" data-delete="${Number(product.id)}">حذف</button>
+      </td>
+    </tr>
+  `).join("");
+
+  $("emptyMessage").classList.toggle("hidden", products.length > 0);
+}
+
+$("loginForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  if ($("username").value.trim() === USERNAME &&
+      $("password").value === PASSWORD) {
+    $("loginBox").classList.add("hidden");
+    $("dashboard").classList.remove("hidden");
+    $("loginError").textContent = "";
+    renderProducts();
+  } else {
+    $("loginError").textContent = "اسم المستخدم أو كلمة المرور غير صحيحة.";
+  }
+});
+
+$("logoutBtn").addEventListener("click", () => {
+  $("dashboard").classList.add("hidden");
+  $("loginBox").classList.remove("hidden");
+  $("password").value = "";
+});
+
+function resetForm() {
+  $("productForm").reset();
+  $("productId").value = "";
+  $("formTitle").textContent = "إضافة منتج جديد";
+  $("saveBtn").textContent = "إضافة المنتج";
+}
+
+$("cancelBtn").addEventListener("click", resetForm);
+$("filter").addEventListener("change", renderProducts);
+
+$("productForm").addEventListener("submit", event => {
+  event.preventDefault();
+
+  const data = readProducts();
+  const id = $("productId").value;
+  const category = $("category").value;
+  const product = {
+    id: id ? Number(id) : Date.now(),
+    name: $("name").value.trim(),
+    price: Number($("price").value),
+    category,
+    icon: $("icon").value.trim() || "📦",
+    description: $("description").value.trim(),
+    image: $("image").value.trim()
+  };
+
+  if (!product.name || !Number.isFinite(product.price) || product.price < 0) {
+    showStatus("راجعي اسم المنتج والسعر.");
+    return;
+  }
+
+  if (id) {
+    let found = false;
+    for (const key of Object.keys(categoryNames)) {
+      data[key] = data[key].filter(item => {
+        if (Number(item.id) === Number(id)) {
+          found = true;
+          return false;
+        }
+        return true;
+      });
+    }
+    if (!found) {
+      showStatus("لم يتم العثور على المنتج.");
+      return;
+    }
+  }
+
+  data[category].push(product);
+
+  if (saveProducts(data)) {
+    resetForm();
+    renderProducts();
+    showStatus(id ? "تم تحديث المنتج محليًا." : "تمت إضافة المنتج محليًا.");
+  }
+});
+
+$("productsList").addEventListener("click", event => {
+  const editButton = event.target.closest("[data-edit]");
+  const deleteButton = event.target.closest("[data-delete]");
+  if (!editButton && !deleteButton) return;
+
+  const id = Number((editButton || deleteButton).dataset[
+    editButton ? "edit" : "delete"
+  ]);
+  const data = readProducts();
+  const product = allProducts(data).find(item => Number(item.id) === id);
+  if (!product) return;
+
+  if (editButton) {
+    $("productId").value = product.id;
+    $("name").value = product.name || "";
+    $("price").value = product.price;
+    $("category").value = product.category;
+    $("icon").value = product.icon || "";
+    $("description").value = product.description || "";
+    $("image").value = product.image || "";
+    $("formTitle").textContent = "تعديل المنتج";
+    $("saveBtn").textContent = "حفظ التعديلات";
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  if (deleteButton && confirm("هل تريدين حذف المنتج: " + product.name + "؟")) {
+    for (const key of Object.keys(categoryNames)) {
+      data[key] = data[key].filter(item => Number(item.id) !== id);
+    }
+    if (saveProducts(data)) {
+      renderProducts();
+      showStatus("تم حذف المنتج محليًا.");
+    }
+  }
+});
+
+$("exportBtn").addEventListener("click", () => {
+  const blob = new Blob(
+    [JSON.stringify(readProducts(), null, 2)],
+    {type:"application/json"}
+  );
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "health-care-products.json";
+  link.click();
+  URL.revokeObjectURL(url);
+});
+
+$("importBtn").addEventListener("click", () => $("importFile").click());
+
+$("importFile").addEventListener("change", async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  try {
+    const data = JSON.parse(await file.text());
+    for (const key of Object.keys(categoryNames)) {
+      if (!Array.isArray(data[key])) {
+        throw new Error("Invalid category");
+      }
+    }
+    if (saveProducts(data)) {
+      renderProducts();
+      showStatus("تم استيراد المنتجات محليًا.");
+    }
+  } catch {
+    alert("الملف غير صالح أو لا يحتوي على الأقسام المطلوبة.");
+  }
+  event.target.value = "";
+});
+</script>
 </body>
 </html>
