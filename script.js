@@ -652,20 +652,18 @@ async function loadProductsFromSheet() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   const searchInput = document.getElementById("searchInput");
 
   if (searchInput) {
     searchInput.addEventListener("input", handleSearchInput);
   }
 
-  document.querySelectorAll(".category-button").forEach(
-    function(button) {
-      button.addEventListener("click", function() {
-        filterProducts(button.dataset.category, button);
-      });
-    }
-  );
+  document.querySelectorAll(".category-button").forEach(function (button) {
+    button.addEventListener("click", function () {
+      filterProducts(button.dataset.category, button);
+    });
+  });
 
   const allButton = document.querySelector(
     '.category-button[data-category="all"]'
@@ -684,3 +682,4 @@ window.removeFromCart = removeFromCart;
 window.submitOrder = submitOrder;
 window.filterProducts = filterProducts;
 window.handleSearchInput = handleSearchInput;
+
