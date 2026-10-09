@@ -524,6 +524,14 @@ document.addEventListener("DOMContentLoaded", function() {
     searchInput.addEventListener("input", handleSearchInput);
   }
 
+ 
+document.addEventListener("DOMContentLoaded", function() {
+  var searchInput = document.getElementById("searchInput");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", handleSearchInput);
+  }
+
   document.querySelectorAll(".category-button").forEach(function(button) {
     button.addEventListener("click", function() {
       filterProducts(button.dataset.category, button);
