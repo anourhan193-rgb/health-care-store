@@ -657,3 +657,40 @@ footer p {
   }
 }
 
+.store-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.store-logo {
+  width: 65px;
+  height: 65px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.store-brand-text h1 {
+  margin: 0;
+  color: #1976B9;
+  font-size: 24px;
+}
+
+.store-brand-text p {
+  margin: 4px 0 0;
+  color: #55705B;
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .store-logo {
+    width: 48px;
+    height: 48px;
+  }
+
+  .store-brand-text h1 {
+    font-size: 19px;
+  }
+}
+
