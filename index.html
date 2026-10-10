@@ -1,191 +1,1398 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Health Care | مستلزمات الرعاية الصحية، الكليات العلمية، ومعامل التحاليل الطبية" />
-  <title>Health Care | مستلزمات الرعاية الصحية</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Health Care - مستلزمات الرعاية الصحية ومعامل التحاليل والكليات العلمية">
+  <title>Health Care Store | متجر الرعاية الصحية</title>
+
+  <style>
+    :root {
+      --blue: #17649a;
+      --blue-dark: #10466f;
+      --light-blue: #eaf7ff;
+      --red: #e53935;
+      --green: #26966e;
+      --text: #183b56;
+      --muted: #6b8294;
+      --white: #fff;
+      --bg: #f6fbfe;
+      --border: #deebf3;
+      --shadow: 0 8px 28px rgba(21, 76, 112, .09);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 90px;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Tahoma, Arial, sans-serif;
+      line-height: 1.8;
+    }
+
+    button, input, textarea { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { text-decoration: none; color: inherit; }
+    img { max-width: 100%; }
+
+    .container {
+      width: min(1180px, 92%);
+      margin: auto;
+    }
+
+    .topbar {
+      background: var(--blue-dark);
+      color: white;
+      text-align: center;
+      padding: 7px 12px;
+      font-size: 13px;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255,255,255,.97);
+      border-bottom: 1px solid var(--border);
+      box-shadow: 0 3px 18px rgba(20,70,100,.06);
+    }
+
+    .navbar {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .brand-mark {
+      width: 49px;
+      height: 49px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background: var(--light-blue);
+      color: var(--blue);
+      font-size: 28px;
+    }
+
+    .brand-name {
+      font-size: 23px;
+      font-weight: 900;
+      direction: ltr;
+      line-height: 1.2;
+    }
+
+    .brand-name .health { color: var(--red); }
+    .brand-name .care { color: var(--blue); }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    nav a:hover { color: var(--red); }
+
+    .cart-link {
+      background: var(--light-blue);
+      padding: 8px 13px;
+      border-radius: 12px;
+      color: var(--blue-dark);
+    }
+
+    .hero {
+      position: relative;
+      min-height: 470px;
+      display: flex;
+      align-items: center;
+      color: white;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(9,48,76,.90), rgba(15,90,133,.64)),
+        url("https://images.unsplash.com/photo-1584515933487-779824d29309?auto=format&fit=crop&w=1800&q=85")
+        center/cover no-repeat;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      padding: 65px 0;
+      max-width: 690px;
+    }
+
+    .hero-tag {
+      display: inline-block;
+      padding: 6px 15px;
+      border: 1px solid rgba(255,255,255,.45);
+      background: rgba(255,255,255,.12);
+      border-radius: 30px;
+      font-size: 14px;
+    }
+
+    .hero h1 {
+      margin: 16px 0 6px;
+      font-size: clamp(38px, 6vw, 64px);
+      line-height: 1.25;
+      direction: ltr;
+      text-align: right;
+    }
+
+    .hero h2 {
+      margin: 8px 0;
+      font-size: clamp(23px, 3vw, 34px);
+    }
+
+    .hero p {
+      max-width: 580px;
+      color: #f0f8ff;
+      margin-bottom: 28px;
+    }
+
+    .btn {
+      border: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 12px 23px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+    .btn-red { background: var(--red); color: white; }
+    .btn-blue { background: var(--blue); color: white; }
+    .btn-green { background: var(--green); color: white; }
+    .btn-light { background: var(--light-blue); color: var(--blue-dark); }
+
+    section { padding: 58px 0; }
+
+    .section-heading {
+      max-width: 730px;
+      margin: 0 auto 30px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      color: var(--blue);
+      background: #e3f4ff;
+      border-radius: 30px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .section-heading h2 {
+      margin: 12px 0 5px;
+      color: var(--blue-dark);
+      font-size: clamp(25px, 4vw, 36px);
+    }
+
+    .section-heading p { color: var(--muted); margin: 0; }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .category-card {
+      padding: 0;
+      overflow: hidden;
+      text-align: right;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: white;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      color: var(--text);
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .category-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 14px 32px rgba(20,73,110,.15);
+    }
+
+    .category-card img {
+      width: 100%;
+      height: 215px;
+      object-fit: cover;
+      display: block;
+      background: var(--light-blue);
+    }
+
+    .category-info { padding: 16px 18px 20px; }
+
+    .category-info h3 {
+      margin: 0 0 5px;
+      color: var(--blue-dark);
+      font-size: 18px;
+    }
+
+    .category-info span {
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .about-section { background: white; }
+
+    .about-content {
+      max-width: 850px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .about-content p { color: var(--muted); }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 15px;
+      margin-top: 28px;
+    }
+
+    .feature {
+      padding: 20px 12px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: var(--bg);
+    }
+
+    .feature strong {
+      display: block;
+      color: var(--blue);
+      margin-bottom: 4px;
+    }
+
+    .store-section { background: #f1f9fe; }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      max-width: 620px;
+      margin: 0 auto 22px;
+    }
+
+    .search-box input {
+      width: 100%;
+      min-width: 0;
+      padding: 13px 16px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      outline: none;
+    }
+
+    .search-box input:focus,
+    .form-control:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(23,100,154,.1);
+    }
+
+    .filters {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 32px;
+    }
+
+    .filter-btn {
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 9px 16px;
+      background: white;
+      color: var(--blue-dark);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .filter-btn.active,
+    .filter-btn:hover {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+    }
+
+    .product-category { margin-bottom: 42px; }
+    .product-category[hidden] { display: none !important; }
+
+    .category-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 18px;
+      color: var(--blue-dark);
+      font-size: 23px;
+    }
+
+    .category-title::before {
+      content: "";
+      width: 5px;
+      height: 28px;
+      background: var(--red);
+      border-radius: 5px;
+    }
+
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .product-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: white;
+      box-shadow: 0 4px 18px rgba(20,70,100,.05);
+    }
+
+    .product-image-wrap {
+      height: 190px;
+      display: grid;
+      place-items: center;
+      background: white;
+      overflow: hidden;
+    }
+
+    .product-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 10px;
+    }
+
+    .product-details {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      padding: 14px;
+    }
+
+    .product-name {
+      margin: 0 0 7px;
+      color: var(--blue-dark);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .product-description {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 12px;
+      flex: 1;
+      overflow-wrap: anywhere;
+    }
+
+    .product-price {
+      color: var(--red);
+      font-weight: 900;
+      font-size: 19px;
+      margin-bottom: 12px;
+    }
+
+    .add-btn { width: 100%; }
+
+    .empty-message {
+      text-align: center;
+      color: var(--muted);
+      padding: 25px 12px;
+      grid-column: 1 / -1;
+    }
+
+    .status-message {
+      max-width: 760px;
+      margin: 0 auto 22px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .cart-section { background: white; }
+
+    .cart-layout {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 25px;
+      align-items: start;
+    }
+
+    .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .panel h3 {
+      margin-top: 0;
+      color: var(--blue-dark);
+    }
+
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cart-item-info { flex: 1; min-width: 0; }
+    .cart-item-info strong { display: block; overflow-wrap: anywhere; }
+    .cart-item-info small { color: var(--muted); }
+
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 5px;
+    }
+
+    .quantity-controls button,
+    .remove-btn {
+      border: 1px solid var(--border);
+      background: var(--light-blue);
+      color: var(--blue-dark);
+      border-radius: 8px;
+      padding: 3px 9px;
+      cursor: pointer;
+    }
+
+    .remove-btn { color: var(--red); background: white; }
+
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 0;
+    }
+
+    .total-line.final {
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+      padding-top: 15px;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--blue-dark);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 13px;
+      margin: 5px 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      background: white;
+    }
+
+    .form-label { font-weight: 700; font-size: 14px; }
+
+    .payment-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin: 9px 0 17px;
+    }
+
+    .checkout-btn { width: 100%; }
+
+    .notice {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 10px;
+    }
+
+    footer {
+      background: #103b5a;
+      color: white;
+      padding: 32px 0 18px;
+    }
+
+    .footer-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    footer p { margin: 5px 0; color: #d5e9f7; }
+    footer a { color: white; }
+    .footer-brand { font-size: 22px; font-weight: 900; direction: ltr; }
+
+    .whatsapp-float {
+      position: fixed;
+      z-index: 15;
+      bottom: 20px;
+      left: 18px;
+      width: 55px;
+      height: 55px;
+      display: grid;
+      place-items: center;
+      background: #20b76b;
+      color: white;
+      border-radius: 50%;
+      box-shadow: 0 5px 18px rgba(0,0,0,.2);
+      font-size: 27px;
+    }
+
+    @media (max-width: 900px) {
+      .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      nav { gap: 12px; }
+      .navbar { gap: 12px; }
+    }
+
+    @media (max-width: 650px) {
+      .navbar {
+        padding: 12px 0;
+        flex-wrap: wrap;
+      }
+
+      .brand-name { font-size: 20px; }
+      .brand-mark { width: 42px; height: 42px; }
+
+      nav {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        font-size: 13px;
+      }
+
+      .hero { min-height: 420px; }
+      .hero-content { padding: 48px 0; }
+
+      section { padding: 42px 0; }
+
+      .category-grid { grid-template-columns: 1fr; gap: 16px; }
+      .category-card img { height: 210px; }
+
+      .features { grid-template-columns: 1fr; }
+      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .product-image-wrap { height: 150px; }
+      .product-details { padding: 11px; }
+      .product-name { font-size: 14px; }
+      .product-price { font-size: 17px; }
+
+      .cart-layout { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+      .search-box { flex-direction: column; }
+      .category-title { font-size: 20px; }
+    }
+
+    @media (max-width: 360px) {
+      .product-grid { grid-template-columns: 1fr; }
+      .product-image-wrap { height: 220px; }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="topbar">
+    مستلزمات الرعاية الصحية والمعامل والكليات العلمية في مكان واحد
+  </div>
 
-  <header class="header">
-    <a href="#home" class="logo" aria-label="Health Care home">
-      <span class="logo-red">Health</span>
-      <span class="logo-blue">Care</span>
-    </a>
-
-    <nav class="nav">
-      <a href="#home">الرئيسية</a>
-      <a href="#about">من نحن</a>
-      <a href="#products">المنتجات</a>
-      <a href="#cart" class="cart-link">
-        🛒 السلة
-        <span id="cartCount">0</span>
+  <header>
+    <div class="container navbar">
+      <a class="brand" href="#home" aria-label="Health Care الرئيسية">
+        <span class="brand-mark">✚</span>
+        <span class="brand-name">
+          <span class="health">Health</span>
+          <span class="care">Care</span>
+        </span>
       </a>
-    </nav>
+
+      <nav aria-label="القائمة الرئيسية">
+        <a href="#home">الرئيسية</a>
+        <a href="#about">من نحن</a>
+        <a href="#categories">الأقسام</a>
+        <a href="#products">المنتجات</a>
+        <a href="#cart" class="cart-link">
+          🛒 السلة <span id="cartCount">0</span>
+        </a>
+      </nav>
+    </div>
   </header>
 
   <main>
-    <section id="home" class="hero">
-      <div class="hero-overlay"></div>
-      <div class="hero-content">
-        <div class="pill-icon">⚕</div>
-        <h1>Health Care</h1>
-        <h2>رعايتك تبدأ من هنا</h2>
+    <section class="hero" id="home">
+      <div class="container">
+        <div class="hero-content">
+          <span class="hero-tag">رعاية موثوقة • احتياجاتك في مكان واحد</span>
+          <h1><span style="color:#ff7773">Health</span> Care</h1>
+          <h2>رعايتك تبدأ من هنا</h2>
+          <p>
+            اكتشفي مستلزمات الرعاية الصحية ومعامل التحاليل الطبية
+            والكليات العلمية، وتصفحي المنتجات بسهولة من مكانك.
+          </p>
+          <a href="#products" class="btn btn-red">تصفحي المنتجات ←</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="categories">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">تسوقي بسهولة</span>
+          <h2>تصفحي أقسام متجرنا</h2>
+          <p>اختاري القسم المناسب للوصول إلى المنتجات التي تحتاجينها.</p>
+        </div>
+
+        <div class="category-grid">
+          <button class="category-card" type="button" data-open-category="health">
+            <img
+              src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80"
+              alt="مستلزمات الرعاية الصحية" loading="lazy">
+            <div class="category-info">
+              <h3>مستلزمات الرعاية الصحية</h3>
+              <span>تصفحي القسم ←</span>
+            </div>
+          </button>
+
+          <button class="category-card" type="button" data-open-category="laboratory">
+            <img
+              src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=800&q=80"
+              alt="مستلزمات معامل التحاليل الطبية" loading="lazy">
+            <div class="category-info">
+              <h3>مستلزمات معامل التحاليل الطبية</h3>
+              <span>تصفحي القسم ←</span>
+            </div>
+          </button>
+
+          <button class="category-card" type="button" data-open-category="science">
+            <img
+              src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"
+              alt="مستلزمات الكليات العلمية" loading="lazy">
+            <div class="category-info">
+              <h3>مستلزمات الكليات العلمية</h3>
+              <span>تصفحي القسم ←</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section" id="about">
+      <div class="container about-content">
+        <span class="eyebrow">من نحن</span>
+        <h2>أهلًا بكِ في Health Care</h2>
         <p>
-          مستلزمات الرعاية الصحية المنزلية، منتجات الكليات العلمية،
-          وأدوات معامل التحاليل الطبية بجودة عالية وسهولة في الطلب.
+          متجر يهتم بتوفير مستلزمات الرعاية الصحية والمنتجات التي تحتاجها
+          معامل التحاليل الطبية وطلاب الكليات العلمية، مع تجربة تصفح
+          بسيطة تساعدك على الوصول إلى احتياجاتك.
         </p>
-        <div class="hero-actions">
-          <a href="#products" class="main-button">تصفح المنتجات</a>
+
+        <div class="features">
+          <div class="feature">
+            <strong>✚ رعاية صحية</strong>
+            <span>مستلزمات متنوعة للرعاية الصحية</span>
+          </div>
+          <div class="feature">
+            <strong>⚗ معامل طبية</strong>
+            <span>مستلزمات معامل التحاليل</span>
+          </div>
+          <div class="feature">
+            <strong>🔬 كليات علمية</strong>
+            <span>مستلزمات الدراسة والتطبيق العملي</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <section id="about" class="about">
-      <div class="section-heading">
-        <span>من نحن</span>
-        <h2>Health Care</h2>
-      </div>
+    <section class="store-section" id="products">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">منتجاتنا</span>
+          <h2>تسوقي منتجات Health Care</h2>
+          <p>ابحثي عن المنتج أو اختاري أحد الأقسام.</p>
+        </div>
 
-      <div class="about-box">
-        <div class="about-icon">🩺</div>
-        <div class="about-text">
-          <h3>رعاية أفضل... لصحة أفضل</h3>
-          <p>
-            Health Care هي منصة عربية لتوفير مستلزمات الرعاية الصحية
-            والمعدات العلمية والطبية بطريقة منظمة وسهلة.
-          </p>
-          <p>
-            نوفر منتجات مناسبة للاستخدام المنزلي، الطلاب في الكليات العلمية،
-            وأصحاب المعامل الطبية والتحاليل.
-          </p>
+        <div id="sheetStatus" class="status-message" role="status">
+          جارٍ تحميل المنتجات...
+        </div>
+
+        <div class="search-box">
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="ابحثي باسم المنتج..."
+            aria-label="البحث عن المنتجات">
+          <button id="clearSearch" class="btn btn-light" type="button">
+            مسح البحث
+          </button>
+        </div>
+
+        <div class="filters" aria-label="فلترة المنتجات">
+          <button class="filter-btn active" data-category="all" type="button">كل المنتجات</button>
+          <button class="filter-btn" data-category="health" type="button">الرعاية الصحية</button>
+          <button class="filter-btn" data-category="laboratory" type="button">معامل التحاليل</button>
+          <button class="filter-btn" data-category="science" type="button">الكليات العلمية</button>
+        </div>
+
+        <div class="product-category" data-category="health">
+          <h3 class="category-title">مستلزمات الرعاية الصحية</h3>
+          <div class="product-grid" id="healthProducts"></div>
+        </div>
+
+        <div class="product-category" data-category="laboratory">
+          <h3 class="category-title">مستلزمات معامل التحاليل الطبية</h3>
+          <div class="product-grid" id="laboratoryProducts"></div>
+        </div>
+
+        <div class="product-category" data-category="science">
+          <h3 class="category-title">مستلزمات الكليات العلمية</h3>
+          <div class="product-grid" id="scienceProducts"></div>
         </div>
       </div>
     </section>
 
-    <section id="products" class="products-section">
-      <div class="section-heading">
-        <span>منتجاتنا</span>
-        <h2>اختاري القسم المناسب</h2>
-      </div>
-
-      <div class="search-box">
-        <input
-          type="search"
-          id="searchInput"
-          placeholder="🔎 ابحثي عن منتج..."
-          aria-label="البحث عن منتج"
-        />
-      </div>
-
-      <div class="categories">
-        <button class="category-button active" data-category="all">جميع المنتجات</button>
-        <button class="category-button" data-category="health">🏠 الرعاية الصحية</button>
-        <button class="category-button" data-category="science">🎓 الكليات العلمية</button>
-        <button class="category-button" data-category="laboratory">🧪 معامل التحاليل الطبية</button>
-      </div>
-
-      <div class="product-category" data-category="health">
-        <div class="category-heading">
-          <h3>🏠 مستلزمات الرعاية الصحية</h3>
-          <p>منتجات مناسبة للعناية المنزلية والمتابعة الصحية</p>
-        </div>
-        <div id="healthProducts" class="products-grid"></div>
-      </div>
-
-      <div class="product-category" data-category="science">
-        <div class="category-heading">
-          <h3>🎓 مستلزمات الكليات العلمية</h3>
-          <p>مواد عملية للطلاب والمعامل التعليمية</p>
-        </div>
-        <div id="scienceProducts" class="products-grid"></div>
-      </div>
-
-      <div class="product-category" data-category="laboratory">
-        <div class="category-heading">
-          <h3>🧪 مستلزمات معامل التحاليل الطبية</h3>
-          <p>أدوات ومستلزمات لأعمال المختبر الطبي</p>
-        </div>
-        <div id="laboratoryProducts" class="products-grid"></div>
-      </div>
-    </section>
-
-    <section id="cart" class="cart-section">
-      <div class="section-heading">
-        <span>طلبك</span>
-        <h2>سلة الطلب</h2>
-      </div>
-
-      <div id="cartItems" class="cart-items"></div>
-
-      <div class="cart-summary">
-        <div class="summary-row">
-          <span>إجمالي المنتجات</span>
-          <strong id="subtotal">0 جنيه</strong>
+    <section class="cart-section" id="cart">
+      <div class="container">
+        <div class="section-heading">
+          <span class="eyebrow">طلبك</span>
+          <h2>سلة المشتريات</h2>
+          <p>راجعي المنتجات وأدخلي بيانات التواصل لإرسال الطلب.</p>
         </div>
 
-        <div class="summary-row">
-          <span>سعر التوصيل</span>
-          <strong id="delivery">0 جنيه</strong>
+        <div class="cart-layout">
+          <div class="panel">
+            <h3>المنتجات المختارة</h3>
+            <div id="cartItems">
+              <p class="empty-message">السلة فارغة حاليًا.</p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>بيانات الطلب</h3>
+
+            <div class="total-line">
+              <span>الإجمالي الفرعي</span>
+              <strong id="subtotal">0 ج.م</strong>
+            </div>
+            <div class="total-line final">
+              <span>الإجمالي</span>
+              <strong id="total">0 ج.م</strong>
+            </div>
+            <p class="notice">تكلفة التوصيل تُحدد عند تأكيد الطلب.</p>
+
+            <form id="checkoutForm">
+              <label class="form-label" for="customerName">الاسم بالكامل</label>
+              <input class="form-control" id="customerName" required maxlength="100"
+                placeholder="اكتبي اسمك">
+
+              <label class="form-label" for="customerPhone">رقم الهاتف</label>
+              <input class="form-control" id="customerPhone" required
+                type="tel" inputmode="tel" maxlength="20" placeholder="رقم للتواصل">
+
+              <label class="form-label" for="customerAddress">العنوان</label>
+              <textarea class="form-control" id="customerAddress" required
+                rows="3" maxlength="500" placeholder="المحافظة والمنطقة والعنوان"></textarea>
+
+              <div class="form-label">طريقة الدفع</div>
+              <div class="payment-options">
+                <label><input type="radio" name="payment" value="عند الاستلام" checked> عند الاستلام</label>
+                <label><input type="radio" name="payment" value="يتم الاتفاق عليها"> يتم الاتفاق عليها</label>
+              </div>
+
+              <button class="btn btn-green checkout-btn" type="submit">
+                إرسال الطلب عبر واتساب
+              </button>
+              <p class="notice">
+                سيُفتح واتساب برسالة تحتوي على تفاصيل الطلب لتراجعيها قبل الإرسال.
+              </p>
+            </form>
+          </div>
         </div>
-
-        <hr />
-
-        <div class="summary-row total-row">
-          <span>الإجمالي النهائي</span>
-          <strong id="total">0 جنيه</strong>
-        </div>
-      </div>
-
-      <div class="order-form">
-        <h2>بيانات الطلب</h2>
-        <p class="form-note">املئي البيانات التالية لإرسال الطلب عبر واتساب.</p>
-
-        <label for="customerName">الاسم بالكامل</label>
-        <input type="text" id="customerName" placeholder="اكتبي الاسم بالكامل" />
-
-        <label for="customerPhone">رقم الهاتف</label>
-        <input type="tel" id="customerPhone" placeholder="05xxxxxxxx" />
-
-        <label for="customerAddress">العنوان</label>
-        <textarea id="customerAddress" placeholder="المحافظة - المنطقة - الشارع - رقم العقار"></textarea>
-
-        <h3>طريقة الدفع</h3>
-
-        <label class="payment-option">
-          <input type="radio" name="payment" value="الدفع عند الاستلام" />
-          الدفع عند الاستلام
-        </label>
-
-        <label class="payment-option">
-          <input type="radio" name="payment" value="محفظة إلكترونية" />
-          محفظة إلكترونية
-        </label>
-
-        <label class="payment-option">
-          <input type="radio" name="payment" value="تحويل بنكي" />
-          تحويل بنكي
-        </label>
-
-        <button class="whatsapp-button" onclick="submitOrder()">📱 إرسال الطلب عبر واتساب</button>
       </div>
     </section>
   </main>
 
   <footer>
-    <div class="footer-logo">
-      <span>Health</span>Care
+    <div class="container footer-content">
+      <div>
+        <div class="footer-brand">Health Care</div>
+        <p>رعايتك تبدأ من هنا</p>
+      </div>
+      <div>
+        <p>للطلب والاستفسار</p>
+        <a href="https://wa.me/201208791400" target="_blank" rel="noopener">
+          تواصلي معنا عبر واتساب
+        </a>
+      </div>
+      <p>© <span id="currentYear"></span> Health Care Store</p>
     </div>
-    <p>رعاية أفضل... لصحة أفضل</p>
-    <p class="copyright">© 2026 Health Care</p>
   </footer>
 
-  <script src="script.js"></script>
+  <a class="whatsapp-float" href="https://wa.me/201208791400"
+     target="_blank" rel="noopener" aria-label="تواصلي عبر واتساب">☏</a>
+
+  <script>
+    "use strict";
+
+    const SHEET_CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQX6-lkfwu06oaI2wwGSX2QeNqxqv17CjDn0AuCitC1hISZmcohT4wIr4payb54Urrgd135BpX3nspk/pub?gid=0&single=true&output=csv";
+
+    const WHATSAPP_NUMBER = "201208791400";
+    const CART_KEY = "healthCareCart";
+
+    const CATEGORY_NAMES = {
+      health: "مستلزمات الرعاية الصحية",
+      laboratory: "مستلزمات معامل التحاليل الطبية",
+      science: "مستلزمات الكليات العلمية"
+    };
+
+    const PRODUCT_CONTAINERS = {
+      health: document.getElementById("healthProducts"),
+      laboratory: document.getElementById("laboratoryProducts"),
+      science: document.getElementById("scienceProducts")
+    };
+
+    let products = [];
+    let activeCategory = "all";
+    let searchTerm = "";
+
+    function normalizeText(value) {
+      return String(value ?? "")
+        .replace(/^\uFEFF/, "")
+        .trim()
+        .toLowerCase();
+    }
+
+    function normalizeHeader(value) {
+      return normalizeText(value).replace(/[\s_\-]+/g, "");
+    }
+
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cell = "";
+      let quoted = false;
+
+      text = text.replace(/^\uFEFF/, "");
+
+      for (let i = 0; i < text.length; i++) {
+        const char = text[i];
+        const next = text[i + 1];
+
+        if (char === '"' && quoted && next === '"') {
+          cell += '"';
+          i++;
+        } else if (char === '"') {
+          quoted = !quoted;
+        } else if (char === "," && !quoted) {
+          row.push(cell.trim());
+          cell = "";
+        } else if ((char === "\n" || char === "\r") && !quoted) {
+          if (char === "\r" && next === "\n") i++;
+          row.push(cell.trim());
+
+          if (row.some(value => value !== "")) rows.push(row);
+
+          row = [];
+          cell = "";
+        } else {
+          cell += char;
+        }
+      }
+
+      row.push(cell.trim());
+      if (row.some(value => value !== "")) rows.push(row);
+
+      return rows;
+    }
+
+    function getColumn(headers, candidates) {
+      const normalized = headers.map(normalizeHeader);
+
+      for (const candidate of candidates) {
+        const index = normalized.indexOf(normalizeHeader(candidate));
+        if (index !== -1) return index;
+      }
+
+      return -1;
+    }
+
+    function mapCategory(value) {
+      const category = normalizeText(value);
+
+      if (
+        category.includes("laboratory") ||
+        category.includes("lab") ||
+        category.includes("معامل") ||
+        category.includes("تحاليل") ||
+        category.includes("مختبر")
+      ) return "laboratory";
+
+      if (
+        category.includes("science") ||
+        category.includes("college") ||
+        category.includes("faculty") ||
+        category.includes("كليات") ||
+        category.includes("كلية") ||
+        category.includes("علمية") ||
+        category.includes("زراعة")
+      ) return "science";
+
+      if (
+        category.includes("health") ||
+        category.includes("medical") ||
+        category.includes("رعاية") ||
+        category.includes("صحية") ||
+        category.includes("طبية")
+      ) return "health";
+
+      return "";
+    }
+
+    function getProductField(row, index) {
+      return index >= 0 ? String(row[index] ?? "").trim() : "";
+    }
+
+    function convertSheetToProducts(rows) {
+      if (rows.length < 2) return [];
+
+      const headers = rows[0];
+
+      const nameIndex = getColumn(headers, [
+        "name", "product", "productname", "اسم المنتج", "اسم الصنف", "المنتج", "الصنف"
+      ]);
+
+      const priceIndex = getColumn(headers, [
+        "price", "productprice", "السعر", "سعر المنتج", "سعر"
+      ]);
+
+      const descriptionIndex = getColumn(headers, [
+        "description", "details", "الوصف", "وصف المنتج", "التفاصيل"
+      ]);
+
+      const imageIndex = getColumn(headers, [
+        "image", "imageurl", "photo", "picture", "الصورة", "رابط الصورة", "صورة المنتج"
+      ]);
+
+      const categoryIndex = getColumn(headers, [
+        "category", "productcategory", "القسم", "التصنيف", "فئة المنتج", "الفئة"
+      ]);
+
+      const idIndex = getColumn(headers, [
+        "id", "productid", "كود", "كود المنتج", "رقم المنتج"
+      ]);
+
+      if (nameIndex < 0) {
+        throw new Error("لم أجد عمود اسم المنتج في الشيت. راجعي عنوان العمود.");
+      }
+
+      if (priceIndex < 0) {
+        throw new Error("لم أجد عمود السعر في الشيت. راجعي عنوان العمود.");
+      }
+
+      const result = [];
+
+      rows.slice(1).forEach((row, index) => {
+        const name = getProductField(row, nameIndex);
+        const rawPrice = getProductField(row, priceIndex);
+        const price = Number(rawPrice.replace(/[^\d.]/g, ""));
+        const category = mapCategory(getProductField(row, categoryIndex));
+
+        if (!name || !Number.isFinite(price) || !category) return;
+
+        result.push({
+          id: getProductField(row, idIndex) || `${category}-${index}`,
+          name,
+          price,
+          description: getProductField(row, descriptionIndex),
+          image: getProductField(row, imageIndex),
+          category
+        });
+      });
+
+      return result;
+    }
+
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function safeImageURL(value) {
+      const url = String(value ?? "").trim();
+
+      if (/^https:\/\/\S+$/i.test(url)) return url;
+      if (/^http:\/\/\S+$/i.test(url)) return url;
+
+      return "";
+    }
+
+    function formatPrice(value) {
+      return Number(value).toLocaleString("ar-EG", {
+        maximumFractionDigits: 2
+      }) + " ج.م";
+    }
+
+    function getVisibleProducts(category) {
+      return products.filter(product => {
+        const categoryMatch = category === "all" || product.category === category;
+        const searchable = normalizeText(
+          product.name + " " + product.description + " " +
+          CATEGORY_NAMES[product.category]
+        );
+
+        return categoryMatch && searchable.includes(searchTerm);
+      });
+    }
+
+    function renderProducts() {
+      Object.values(PRODUCT_CONTAINERS).forEach(container => {
+        container.replaceChildren();
+      });
+
+      Object.keys(PRODUCT_CONTAINERS).forEach(category => {
+        const section = document.querySelector(
+          '.product-category[data-category="' + category + '"]'
+        );
+
+        const container = PRODUCT_CONTAINERS[category];
+        const categoryVisible = activeCategory === "all" || activeCategory === category;
+        const categoryProducts = getVisibleProducts(category);
+
+        section.hidden = !categoryVisible;
+
+        if (!categoryVisible) return;
+
+        if (categoryProducts.length === 0) {
+          const empty = document.createElement("p");
+          empty.className = "empty-message";
+          empty.textContent = products.length === 0
+            ? "لا توجد منتجات متاحة للعرض في هذا القسم حاليًا."
+            : "لا توجد منتجات مطابقة للبحث في هذا القسم.";
+          container.appendChild(empty);
+          return;
+        }
+
+        categoryProducts.forEach(product => {
+          const card = document.createElement("article");
+          card.className = "product-card";
+
+          const image = safeImageURL(product.image);
+          const imageHTML = image
+            ? '<img class="product-image" loading="lazy" src="' +
+              escapeHTML(image) + '" alt="' + escapeHTML(product.name) + '">'
+            : '<div class="product-image" style="display:grid;place-items:center;color:#17649a;font-size:45px" aria-label="لا توجد صورة">✚</div>';
+
+          card.innerHTML =
+            '<div class="product-image-wrap">' + imageHTML + '</div>' +
+            '<div class="product-details">' +
+              '<h4 class="product-name">' + escapeHTML(product.name) + '</h4>' +
+              '<p class="product-description">' +
+                escapeHTML(product.description || CATEGORY_NAMES[product.category]) +
+              '</p>' +
+              '<div class="product-price">' + formatPrice(product.price) + '</div>' +
+              '<button type="button" class="btn btn-blue add-btn">أضيفي إلى السلة</button>' +
+            '</div>';
+
+          card.querySelector(".add-btn").addEventListener("click", () => {
+            addToCart(product.id);
+          });
+
+          container.appendChild(card);
+        });
+      });
+    }
+
+    function loadCart() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+        return Array.isArray(saved) ? saved : [];
+      } catch {
+        return [];
+      }
+    }
+
+    let cart = loadCart();
+
+    function saveCart() {
+      try {
+        localStorage.setItem(CART_KEY, JSON.stringify(cart));
+      } catch {
+        // يستمر المتجر في العمل حتى لو كان التخزين المحلي غير متاح.
+      }
+    }
+
+    function addToCart(id) {
+      const product = products.find(item => String(item.id) === String(id));
+      if (!product) return;
+
+      const existing = cart.find(item => String(item.id) === String(id));
+
+      if (existing) {
+        existing.quantity = Math.max(1, Number(existing.quantity) || 1) + 1;
+      } else {
+        cart.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          quantity: 1
+        });
+      }
+
+      saveCart();
+      renderCart();
+    }
+
+    function changeQuantity(id, change) {
+      const item = cart.find(product => String(product.id) === String(id));
+      if (!item) return;
+
+      item.quantity = (Number(item.quantity) || 1) + change;
+
+      if (item.quantity <= 0) {
+        cart = cart.filter(product => String(product.id) !== String(id));
+      }
+
+      saveCart();
+      renderCart();
+    }
+
+    function removeFromCart(id) {
+      cart = cart.filter(item => String(item.id) !== String(id));
+      saveCart();
+      renderCart();
+    }
+
+    function renderCart() {
+      const cartItems = document.getElementById("cartItems");
+      const count = cart.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+      const total = cart.reduce(
+        (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 0),
+        0
+      );
+
+      document.getElementById("cartCount").textContent = count;
+      document.getElementById("subtotal").textContent = formatPrice(total);
+      document.getElementById("total").textContent = formatPrice(total);
+
+      cartItems.replaceChildren();
+
+      if (cart.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "empty-message";
+        empty.textContent = "السلة فارغة حاليًا. اختاري منتجاتك من المتجر.";
+        cartItems.appendChild(empty);
+        return;
+      }
+
+      cart.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "cart-item";
+
+        const info = document.createElement("div");
+        info.className = "cart-item-info";
+
+        const name = document.createElement("strong");
+        name.textContent = item.name;
+
+        const price = document.createElement("small");
+        price.textContent = formatPrice(item.price) + " للقطعة";
+
+        const controls = document.createElement("div");
+        controls.className = "quantity-controls";
+
+        const minus = document.createElement("button");
+        minus.type = "button";
+        minus.textContent = "−";
+        minus.setAttribute("aria-label", "تقليل الكمية");
+        minus.addEventListener("click", () => changeQuantity(item.id, -1));
+
+        const quantity = document.createElement("span");
+        quantity.textContent = item.quantity;
+
+        const plus = document.createElement("button");
+        plus.type = "button";
+        plus.textContent = "+";
+        plus.setAttribute("aria-label", "زيادة الكمية");
+        plus.addEventListener("click", () => changeQuantity(item.id, 1));
+
+        controls.append(minus, quantity, plus);
+        info.append(name, price, controls);
+
+        const remove = document.createElement("button");
+        remove.className = "remove-btn";
+        remove.type = "button";
+        remove.textContent = "حذف";
+        remove.addEventListener("click", () => removeFromCart(item.id));
+
+        row.append(info, remove);
+        cartItems.appendChild(row);
+      });
+    }
+
+    function setActiveCategory(category) {
+      activeCategory = category;
+
+      document.querySelectorAll(".filter-btn").forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.category === category
+        );
+      });
+
+      renderProducts();
+    }
+
+    document.querySelectorAll(".filter-btn").forEach(button => {
+      button.addEventListener("click", () => {
+        setActiveCategory(button.dataset.category);
+      });
+    });
+
+    document.querySelectorAll("[data-open-category]").forEach(card => {
+      card.addEventListener("click", () => {
+        setActiveCategory(card.dataset.openCategory);
+        document.getElementById("products").scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      });
+    });
+
+    document.getElementById("searchInput").addEventListener("input", event => {
+      searchTerm = normalizeText(event.target.value);
+      renderProducts();
+    });
+
+    document.getElementById("clearSearch").addEventListener("click", () => {
+      document.getElementById("searchInput").value = "";
+      searchTerm = "";
+      renderProducts();
+    });
+
+    document.getElementById("checkoutForm").addEventListener("submit", event => {
+      event.preventDefault();
+
+      if (cart.length === 0) {
+        alert("السلة فارغة. أضيفي منتجًا واحدًا على الأقل.");
+        return;
+      }
+
+      const name = document.getElementById("customerName").value.trim();
+      const phone = document.getElementById("customerPhone").value.trim();
+      const address = document.getElementById("customerAddress").value.trim();
+      const payment = document.querySelector('input[name="payment"]:checked')?.value || "عند الاستلام";
+
+      if (!name || !phone || !address) {
+        alert("من فضلك أدخلي الاسم ورقم الهاتف والعنوان.");
+        return;
+      }
+
+      const total = cart.reduce(
+        (sum, item) => sum + Number(item.price) * Number(item.quantity),
+        0
+      );
+
+      const lines = [
+        "طلب جديد من Health Care Store",
+        "",
+        "الاسم: " + name,
+        "الهاتف: " + phone,
+        "العنوان: " + address,
+        "طريقة الدفع: " + payment,
+        "",
+        "المنتجات:"
+      ];
+
+      cart.forEach((item, index) => {
+        lines.push(
+          (index + 1) + "- " + item.name +
+          " × " + item.quantity +
+          " = " + formatPrice(Number(item.price) * Number(item.quantity))
+        );
+      });
+
+      lines.push("", "الإجمالي: " + formatPrice(total));
+      lines.push("تكلفة التوصيل: يتم الاتفاق عليها.");
+
+      const url = "https://wa.me/" + WHATSAPP_NUMBER +
+        "?text=" + encodeURIComponent(lines.join("\n"));
+
+      window.open(url, "_blank", "noopener");
+    });
+
+    async function loadProductsFromSheet() {
+      const status = document.getElementById("sheetStatus");
+
+      try {
+        const response = await fetch(SHEET_CSV_URL, { cache: "no-store" });
+
+        if (!response.ok) {
+          throw new Error("تعذر الوصول إلى الشيت المنشور.");
+        }
+
+        const csv = await response.text();
+
+        if (
+          csv.includes("<!DOCTYPE html>") ||
+          csv.includes("<html")
+        ) {
+          throw new Error("الرابط لم يُرجع بيانات CSV. تأكدي من نشر الشيت.");
+        }
+
+        const rows = parseCSV(csv);
+        products = convertSheetToProducts(rows);
+
+        renderProducts();
+
+        if (products.length === 0) {
+          status.textContent =
+            "تم فتح الشيت، لكن لم تُعرض منتجات. راجعي عناوين الأعمدة وتصنيفات الأقسام.";
+        } else {
+          status.textContent = "تم تحميل " + products.length + " منتج من الشيت.";
+        }
+      } catch (error) {
+        console.error("خطأ تحميل المنتجات:", error);
+        products = [];
+        renderProducts();
+        status.textContent =
+          "تعذر تحميل المنتجات من Google Sheets. تأكدي أن الشيت منشور على الويب بصيغة CSV وأن عناوين الأعمدة والتصنيفات صحيحة.";
+      }
+    }
+
+    document.getElementById("currentYear").textContent = new Date().getFullYear();
+
+    renderCart();
+    loadProductsFromSheet();
+  </script>
 </body>
 </html>
-
