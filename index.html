@@ -664,9 +664,9 @@
     <section id="categories">
       <div class="container">
         <div class="section-heading">
-          <span class="eyebrow">تسوقي بسهولة</span>
-          <h2>تصفحي أقسام متجرنا</h2>
-          <p>اختاري القسم المناسب للوصول إلى المنتجات التي تحتاجينها.</p>
+          <span class="eyebrow">تسوق بسهولة</span>
+          <h2>تصفح أقسام متجرنا</h2>
+          <p>اختار القسم المناسب للوصول إلى المنتجات التي تحتاجها.</p>
         </div>
 
         <div class="category-grid">
@@ -676,7 +676,7 @@
               alt="مستلزمات الرعاية الصحية" loading="lazy">
             <div class="category-info">
               <h3>مستلزمات الرعاية الصحية</h3>
-              <span>تصفحي القسم ←</span>
+              <span>تصفح القسم ←</span>
             </div>
           </button>
 
@@ -686,7 +686,7 @@
               alt="مستلزمات معامل التحاليل الطبية" loading="lazy">
             <div class="category-info">
               <h3>مستلزمات معامل التحاليل الطبية</h3>
-              <span>تصفحي القسم ←</span>
+              <span>تصفح القسم ←</span>
             </div>
           </button>
 
@@ -696,7 +696,7 @@
               alt="مستلزمات الكليات العلمية" loading="lazy">
             <div class="category-info">
               <h3>مستلزمات الكليات العلمية</h3>
-              <span>تصفحي القسم ←</span>
+              <span>تصفح القسم ←</span>
             </div>
           </button>
         </div>
@@ -734,8 +734,8 @@
       <div class="container">
         <div class="section-heading">
           <span class="eyebrow">منتجاتنا</span>
-          <h2>تسوقي منتجات Health Care</h2>
-          <p>ابحثي عن المنتج أو اختاري أحد الأقسام.</p>
+          <h2>تسوق منتجات Health Care</h2>
+          <p>ابحث عن المنتج أو اختار أحد الأقسام.</p>
         </div>
 
         <div id="sheetStatus" class="status-message" role="status">
@@ -746,7 +746,7 @@
           <input
             id="searchInput"
             type="search"
-            placeholder="ابحثي باسم المنتج..."
+            placeholder="ابحث باسم المنتج..."
             aria-label="البحث عن المنتجات">
           <button id="clearSearch" class="btn btn-light" type="button">
             مسح البحث
@@ -782,7 +782,7 @@
         <div class="section-heading">
           <span class="eyebrow">طلبك</span>
           <h2>سلة المشتريات</h2>
-          <p>راجعي المنتجات وأدخلي بيانات التواصل لإرسال الطلب.</p>
+          <p>راجع المنتجات وأدخل بيانات التواصل لإرسال الطلب.</p>
         </div>
 
         <div class="cart-layout">
@@ -807,9 +807,9 @@
             <p class="notice">تكلفة التوصيل تُحدد عند تأكيد الطلب.</p>
 
             <form id="checkoutForm">
-              <label class="form-label" for="customerName">الاسم بالكامل</label>
+              <label class="form-label" for="customerName">الاسم </label>
               <input class="form-control" id="customerName" required maxlength="100"
-                placeholder="اكتبي اسمك">
+                placeholder="اكتب اسمك">
 
               <label class="form-label" for="customerPhone">رقم الهاتف</label>
               <input class="form-control" id="customerPhone" required
@@ -829,7 +829,7 @@
                 إرسال الطلب عبر واتساب
               </button>
               <p class="notice">
-                سيُفتح واتساب برسالة تحتوي على تفاصيل الطلب لتراجعيها قبل الإرسال.
+                سيُفتح واتساب برسالة تحتوي على تفاصيل الطلب لتراجعها قبل الإرسال.
               </p>
             </form>
           </div>
@@ -847,7 +847,7 @@
       <div>
         <p>للطلب والاستفسار</p>
         <a href="https://wa.me/201208791400" target="_blank" rel="noopener">
-          تواصلي معنا عبر واتساب
+          تواصل معنا عبر واتساب
         </a>
       </div>
       <p>© <span id="currentYear"></span> Health Care Store</p>
@@ -855,7 +855,7 @@
   </footer>
 
   <a class="whatsapp-float" href="https://wa.me/201208791400"
-     target="_blank" rel="noopener" aria-label="تواصلي عبر واتساب">☏</a>
+     target="_blank" rel="noopener" aria-label="تواصل عبر واتساب">☏</a>
 
   <script>
     "use strict";
@@ -1113,7 +1113,11 @@
             ? '<img class="product-image" loading="lazy" src="' +
               escapeHTML(image) + '" alt="' + escapeHTML(product.name) + '">'
             : '<div class="product-image" style="display:grid;place-items:center;color:#17649a;font-size:45px" aria-label="لا توجد صورة">✚</div>';
-
+<img
+  src="logo.jfif"
+  alt="Health Care Logo"
+  class="store-logo"
+/>
           card.innerHTML =
             '<div class="product-image-wrap">' + imageHTML + '</div>' +
             '<div class="product-details">' +
@@ -1122,7 +1126,7 @@
                 escapeHTML(product.description || CATEGORY_NAMES[product.category]) +
               '</p>' +
               '<div class="product-price">' + formatPrice(product.price) + '</div>' +
-              '<button type="button" class="btn btn-blue add-btn">أضيفي إلى السلة</button>' +
+              '<button type="button" class="btn btn-blue add-btn">أضيف إلى السلة</button>' +
             '</div>';
 
           card.querySelector(".add-btn").addEventListener("click", () => {
@@ -1305,7 +1309,7 @@
       event.preventDefault();
 
       if (cart.length === 0) {
-        alert("السلة فارغة. أضيفي منتجًا واحدًا على الأقل.");
+        alert("السلة فارغة. أضيف منتجًا واحدًا على الأقل.");
         return;
       }
 
