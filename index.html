@@ -450,6 +450,9 @@ header {
 @media (max-width: 900px) {
   .nav-links { gap: 10px; }
   .nav-links a { font-size: 12px; }
+ <a href="#cart" class="cart-link">
+  🛒 السلة <span id="cartCount">0</span>
+</a>
   .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .categories-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -648,7 +651,7 @@ body.cart-open {
       <div class="container">
         <div class="section-heading">
           <h2>تسوق حسب القسم</h2>
-          <p>اختاري القسم المناسب لاحتياجاتك</p>
+          <p>اختار القسم المناسب لاحتياجاتك</p>
         </div>
 
         <div class="categories-grid">
@@ -683,7 +686,7 @@ body.cart-open {
       <div class="container">
         <div class="section-heading">
           <h2>منتجاتنا</h2>
-          <p>ابحثي عن المنتج أو اختاري القسم المناسب</p>
+          <p>ابحث عن المنتج أو اختار القسم المناسب</p>
         </div>
 
         <div class="products-toolbar">
@@ -692,7 +695,7 @@ body.cart-open {
             <input
               id="productSearch"
               type="search"
-              placeholder="ابحثي عن منتج..."
+              placeholder="ابحث عن منتج..."
               aria-label="البحث عن المنتجات"
             >
           </div>
@@ -748,7 +751,7 @@ body.cart-open {
     <section class="section" id="contact" style="background:#EAF5FC">
       <div class="container">
         <div class="section-heading">
-          <h2>تواصلي معنا</h2>
+          <h2>تواصل معنا</h2>
           <p>للاستفسار عن المنتجات والأسعار والطلبات</p>
         </div>
 
@@ -759,7 +762,78 @@ body.cart-open {
             target="_blank"
             rel="noopener noreferrer"
           >
-            💬 تواصل عبر واتساب
+           💬 تواصل عبر واتساب
+         <!-- نافذة السلة الجانبية -->
+    <div id="cartOverlay" class="cart-overlay" hidden></div>
+
+    <aside id="cartDrawer" class="cart-drawer"
+           role="dialog" aria-modal="true"
+           aria-labelledby="cartDrawerTitle" hidden>
+
+      <div class="cart-drawer-header">
+        <h2 id="cartDrawerTitle">🛒 سلة المشتريات</h2>
+        <button type="button" id="closeCart"
+                class="cart-close" aria-label="إغلاق السلة">×</button>
+      </div>
+
+      <div class="cart-layout">
+        <div class="panel">
+          <h3>المنتجات المختارة</h3>
+          <div id="cartItems">
+            <p>السلة فارغة حاليًا.</p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h3>بيانات الطلب</h3>
+
+          <div class="total-line">
+            <span>الإجمالي الفرعي</span>
+            <strong id="subtotal">0 جنيه</strong>
+          </div>
+
+          <div class="total-line">
+            <span>الإجمالي</span>
+            <strong id="total">0 جنيه</strong>
+          </div>
+
+          <p>تكلفة التوصيل تُحدد عند تأكيد الطلب.</p>
+
+          <form id="checkoutForm">
+            <label for="customerName">الاسم</label>
+            <input id="customerName" required maxlength="100"
+                   placeholder="اكتب اسمك">
+
+            <label for="customerPhone">رقم الهاتف</label>
+            <input id="customerPhone" type="tel" required
+                   inputmode="tel" maxlength="20"
+                   placeholder="رقم للتواصل">
+
+            <label for="customerAddress">العنوان</label>
+            <textarea id="customerAddress" required rows="3"
+                      maxlength="500"
+                      placeholder="المحافظة والمنطقة والعنوان"></textarea>
+
+            <p>طريقة الدفع</p>
+            <label>
+              <input type="radio" name="payment"
+                     value="عند الاستلام" checked>
+              عند الاستلام
+            </label>
+
+            <label>
+              <input type="radio" name="payment"
+                     value="يتم الاتفاق عليها">
+              يتم الاتفاق عليها
+            </label>
+
+            <button class="btn btn-primary" type="submit">
+              إرسال الطلب عبر واتساب
+            </button>
+          </form>
+        </div>
+      </div>
+    </aside>    
           </a>
         </div>
       </div>
@@ -1036,12 +1110,16 @@ function renderProducts(products) {
     const actions = document.createElement("div");
     actions.className = "product-actions";
 
-    const orderButton = document.createElement("button");
-    orderButton.type = "button";
-    orderButton.className = "btn btn-primary";
-    orderButton.textContent = "اطلبي عبر واتساب";
+   const orderButton = document.createElement("button");
+orderButton.type = "button";
+orderButton.className = "btn btn-primary";
+orderButton.textContent = "🛒 أضيف إلى السلة";
 
-    orderButton.addEventListener("click", function () {
+orderButton.addEventListener("click", function () {
+  addToCart(product.id);
+});
+
+actions.appendChild(orderButton);
       const message =
         "مرحبًا، أريد الاستفسار عن المنتج: " +
         product.name +
@@ -1136,6 +1214,236 @@ async function loadProductsFromSheet() {
     sheetStatus.className = "status-message error";
   }
 }
+
+/* نظام سلة المشتريات */
+let cart = [];
+
+try {
+  const savedCart = JSON.parse(
+    localStorage.getItem("healthCareCart") || "[]"
+  );
+
+  if (Array.isArray(savedCart)) {
+    cart = savedCart;
+  }
+} catch (error) {
+  cart = [];
+}
+
+function saveCart() {
+  localStorage.setItem("healthCareCart", JSON.stringify(cart));
+}
+
+function openCart() {
+  document.getElementById("cartDrawer").hidden = false;
+  document.getElementById("cartOverlay").hidden = false;
+  document.body.classList.add("cart-open");
+}
+
+function closeCart() {
+  document.getElementById("cartDrawer").hidden = true;
+  document.getElementById("cartOverlay").hidden = true;
+  document.body.classList.remove("cart-open");
+}
+
+document.getElementById("closeCart").addEventListener("click", closeCart);
+document.getElementById("cartOverlay").addEventListener("click", closeCart);
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") closeCart();
+});
+
+document.querySelector(".cart-link").addEventListener("click", function (event) {
+  event.preventDefault();
+  openCart();
+});
+
+function getProductPrice(product) {
+  const value = String(product.price || "")
+    .replace(/,/g, "")
+    .replace(/[^\d.]/g, "");
+
+  return value ? Number(value) : 0;
+}
+
+function addToCart(productId) {
+  const product = allProducts.find(
+    item => String(item.id) === String(productId)
+  );
+
+  if (!product) {
+    alert("لم يتم العثور على المنتج. حاولي تحديث الصفحة.");
+    return;
+  }
+
+  const existing = cart.find(
+    item => String(item.id) === String(productId)
+  );
+
+  if (existing) {
+    existing.quantity += 1;
+  } else {
+    cart.push({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1
+    });
+  }
+
+  saveCart();
+  renderCart();
+  openCart();
+}
+
+function changeQuantity(productId, amount) {
+  const item = cart.find(
+    product => String(product.id) === String(productId)
+  );
+
+  if (!item) return;
+
+  item.quantity += amount;
+
+  if (item.quantity <= 0) {
+    cart = cart.filter(
+      product => String(product.id) !== String(productId)
+    );
+  }
+
+  saveCart();
+  renderCart();
+}
+
+function removeFromCart(productId) {
+  cart = cart.filter(
+    item => String(item.id) !== String(productId)
+  );
+
+  saveCart();
+  renderCart();
+}
+
+function renderCart() {
+  const cartItems = document.getElementById("cartItems");
+  const cartCount = document.getElementById("cartCount");
+  const subtotalElement = document.getElementById("subtotal");
+  const totalElement = document.getElementById("total");
+
+  cartItems.replaceChildren();
+
+  const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+  cartCount.textContent = count;
+
+  let subtotal = 0;
+  const hasUnknownPrice = cart.some(item => getProductPrice(item) <= 0);
+
+  if (cart.length === 0) {
+    const emptyMessage = document.createElement("p");
+    emptyMessage.textContent = "السلة فارغة حاليًا.";
+    cartItems.appendChild(emptyMessage);
+  }
+
+  cart.forEach(item => {
+    const price = getProductPrice(item);
+    subtotal += price * item.quantity;
+
+    const row = document.createElement("div");
+    row.className = "cart-item";
+
+    const details = document.createElement("div");
+
+    const name = document.createElement("strong");
+    name.textContent = item.name;
+
+    const priceText = document.createElement("p");
+    priceText.textContent = price > 0
+      ? price + " جنيه × " + item.quantity
+      : "السعر عند الاستفسار";
+
+    const controls = document.createElement("div");
+    controls.className = "cart-controls";
+
+    const minus = document.createElement("button");
+    minus.type = "button";
+    minus.textContent = "−";
+    minus.setAttribute("aria-label", "تقليل الكمية");
+    minus.addEventListener("click", () => changeQuantity(item.id, -1));
+
+    const quantity = document.createElement("span");
+    quantity.textContent = item.quantity;
+
+    const plus = document.createElement("button");
+    plus.type = "button";
+    plus.textContent = "+";
+    plus.setAttribute("aria-label", "زيادة الكمية");
+    plus.addEventListener("click", () => changeQuantity(item.id, 1));
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "حذف";
+    remove.addEventListener("click", () => removeFromCart(item.id));
+
+    controls.append(minus, quantity, plus, remove);
+    details.append(name, priceText, controls);
+    row.appendChild(details);
+    cartItems.appendChild(row);
+  });
+
+  subtotalElement.textContent = subtotal + " جنيه";
+  totalElement.textContent = subtotal + " جنيه";
+
+  if (hasUnknownPrice) {
+    totalElement.textContent += " + منتجات تحتاج تأكيد السعر";
+  }
+}
+
+/* إرسال تفاصيل الطلب إلى واتساب */
+document.getElementById("checkoutForm").addEventListener("submit", function (event) {
+  event.preventDefault();
+
+  if (cart.length === 0) {
+    alert("أضيفي منتجًا إلى السلة أولًا.");
+    return;
+  }
+
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("customerPhone").value.trim();
+  const address = document.getElementById("customerAddress").value.trim();
+  const payment = document.querySelector('input[name="payment"]:checked').value;
+
+  if (!name || !phone || !address) {
+    alert("من فضلك أدخلي الاسم ورقم الهاتف والعنوان.");
+    return;
+  }
+
+  let message = "طلب جديد من Health Care Store\n\n";
+  message += "الاسم: " + name + "\n";
+  message += "الهاتف: " + phone + "\n";
+  message += "العنوان: " + address + "\n";
+  message += "طريقة الدفع: " + payment + "\n\n";
+  message += "المنتجات:\n";
+
+  cart.forEach(item => {
+    message += "- " + item.name +
+      " × " + item.quantity +
+      " | السعر: " + (item.price || "عند الاستفسار") + "\n";
+  });
+
+  message += "\nالإجمالي المعروف: " +
+    document.getElementById("subtotal").textContent;
+  message += "\nالتوصيل: يُحدد عند التأكيد";
+
+  const whatsappURL =
+    "https://wa.me/" + WHATSAPP_NUMBER +
+    "?text=" + encodeURIComponent(message);
+
+  window.open(whatsappURL, "_blank", "noopener,noreferrer");
+});
+
+/* عرض محتويات السلة المحفوظة عند فتح الموقع */
+renderCart();
 
 // البحث
 productSearch.addEventListener("input", filterProducts);
