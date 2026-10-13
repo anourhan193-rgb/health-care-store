@@ -450,9 +450,6 @@ header {
 @media (max-width: 900px) {
   .nav-links { gap: 10px; }
   .nav-links a { font-size: 12px; }
- <a href="#cart" class="cart-link">
-  🛒 السلة <span id="cartCount">0</span>
-</a>
   .products-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .categories-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
@@ -604,6 +601,7 @@ body.cart-open {
         <a href="#home">الرئيسية</a>
         <a href="#categories">الأقسام</a>
         <a href="#products">المنتجات</a>
+        <a href="#cart" class="cart-link">🛒 السلة <span id="cartCount">0</span></a>
         <a href="#about">من نحن</a>
         <a href="#contact">تواصل معنا</a>
       </nav>
@@ -763,7 +761,12 @@ body.cart-open {
             rel="noopener noreferrer"
           >
            💬 تواصل عبر واتساب
-         <!-- نافذة السلة الجانبية -->
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- نافذة السلة الجانبية -->
     <div id="cartOverlay" class="cart-overlay" hidden></div>
 
     <aside id="cartDrawer" class="cart-drawer"
@@ -834,10 +837,7 @@ body.cart-open {
         </div>
       </div>
     </aside>    
-          </a>
-        </div>
-      </div>
-    </section>
+
   </main>
 
   <footer style="background:#12558A;color:white;padding:25px 0;text-align:center">
@@ -1110,29 +1110,13 @@ function renderProducts(products) {
     const actions = document.createElement("div");
     actions.className = "product-actions";
 
-   const orderButton = document.createElement("button");
-orderButton.type = "button";
-orderButton.className = "btn btn-primary";
-orderButton.textContent = "🛒 أضيف إلى السلة";
+    const orderButton = document.createElement("button");
+    orderButton.type = "button";
+    orderButton.className = "btn btn-primary";
+    orderButton.textContent = "🛒 أضيفي إلى السلة";
 
-orderButton.addEventListener("click", function () {
-  addToCart(product.id);
-});
-
-actions.appendChild(orderButton);
-      const message =
-        "مرحبًا، أريد الاستفسار عن المنتج: " +
-        product.name +
-        (product.price ? "\nالسعر: " + product.price + " جنيه" : "") +
-        "\nمن متجر Health Care Store";
-
-      const whatsappURL =
-        "https://wa.me/" +
-        WHATSAPP_NUMBER +
-        "?text=" +
-        encodeURIComponent(message);
-
-      window.open(whatsappURL, "_blank", "noopener,noreferrer");
+    orderButton.addEventListener("click", function () {
+      addToCart(product.id);
     });
 
     actions.appendChild(orderButton);
