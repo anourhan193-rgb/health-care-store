@@ -927,7 +927,7 @@ footer p { margin: 5px 0 0; font-size: 12px; }
         <div class="search-box">
           <span>🔍</span>
           <input id="productSearch" type="search"
-                 placeholder="ابحثي عن منتج..."
+                 placeholder="ابحث عن منتج..."
                  aria-label="البحث عن المنتجات">
         </div>
 
@@ -1377,13 +1377,16 @@ function filterProducts() {
   renderProducts(filtered);
 }
 
+```javascript
 async function loadProductsFromSheet() {
   sheetStatus.textContent = "جارٍ تحميل المنتجات من Google Sheets...";
   sheetStatus.className = "status-message";
 
   try {
+    // استخدام رابط CSV المنشور مباشرة دون تحويله
     const response = await fetch(SHEET_CSV_URL, {
-      cache: "no-store"
+      cache: "no-store",
+      redirect: "follow"
     });
 
     if (!response.ok) {
@@ -1392,11 +1395,45 @@ async function loadProductsFromSheet() {
 
     const csvText = await response.text();
 
-    if (/^\s*(<!DOCTYPE html|<html)/i.test(csvText)) {
-      throw new Error(
-        "الرابط يعرض صفحة ويب بدل CSV. راجعي إعدادات نشر الشيت."
-      );
+    if (
+      /^\s*(<!DOCTYPE html|<html)/i.test(csvText) ||
+      !csvText.trim()
+    ) {
+      throw new Error("لم يتم استلام بيانات CSV صحيحة من الشيت.");
     }
+
+    const rows = parseCSV(csvText);
+
+    if (rows.length < 2) {
+      throw new Error("الشيت لا يحتوي على منتجات أو صفوف بيانات.");
+    }
+
+    const products = convertSheetToProducts(rows);
+
+    if (!products.length) {
+      throw new Error("لم يتم العثور على منتجات. راجعي أسماء الأعمدة.");
+    }
+
+    allProducts = products;
+
+    // تحديث المنتجات المعروضة حسب البحث والقسم المختار
+    filterProducts();
+
+    sheetStatus.textContent =
+      "تم تحميل " + allProducts.length + " منتج بنجاح.";
+    sheetStatus.className = "status-message";
+
+    // تحديث الأسعار المحفوظة في السلة من الشيت
+    renderCart();
+
+  } catch (error) {
+    console.error("Google Sheets error:", error);
+
+    sheetStatus.textContent =
+      "تعذر تحميل المنتجات. افتحي Console لمعرفة سبب الخطأ.";
+    sheetStatus.className = "status-message error";
+  }
+}
 
     const rows = parseCSV(csvText);
     allProducts = convertSheetToProducts(rows);
