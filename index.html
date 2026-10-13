@@ -490,81 +490,78 @@ header {
   .search-box { max-width: none; }
 }
   
-/* نافذة سلة المشتريات الجانبية فقط */
+/* سلة مشتريات أنيقة ومتجاوبة */
 .cart-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba(12, 35, 52, 0.5);
+  background: rgba(9, 30, 52, .58);
+  backdrop-filter: blur(3px);
 }
-
-.cart-overlay[hidden],
-.cart-drawer[hidden] {
-  display: none !important;
-}
-
+.cart-overlay[hidden], .cart-drawer[hidden] { display: none !important; }
 .cart-drawer {
-  position: fixed;
-  z-index: 1001;
-  top: 0;
-  right: 0;
-  width: min(460px, 100%);
-  height: 100%;
-  overflow-y: auto;
-  padding: 20px;
-  background: #fff;
-  box-shadow: -8px 0 30px rgba(0, 0, 0, 0.16);
+  position: fixed; z-index: 1001; top: 0; right: 0;
+  width: min(470px, 100%); height: 100dvh; overflow-y: auto;
+  padding: 22px; background: #f7fbfe;
+  border-left: 1px solid #d9eaf5;
+  box-shadow: -14px 0 42px rgba(12, 52, 82, .22);
+  animation: cartSlideIn .22s ease-out;
 }
-
+@keyframes cartSlideIn { from { transform: translateX(24px); opacity: .75; } to { transform: translateX(0); opacity: 1; } }
 .cart-drawer-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 14px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--border);
+  position: sticky; top: -22px; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 15px 0; margin: -5px 0 18px;
+  background: rgba(247, 251, 254, .96); border-bottom: 1px solid #dceaf3;
 }
-
-.cart-drawer-header h2 {
-  margin: 0;
-  color: var(--blue-dark);
-  font-size: 23px;
-}
-
+.cart-drawer-header h2 { margin: 0; color: var(--blue-dark); font-size: 22px; font-weight: 800; }
 .cart-close {
-  width: 40px;
-  height: 40px;
-  border: 0;
-  border-radius: 10px;
-  background: var(--light-blue);
-  color: var(--blue-dark);
-  font-size: 27px;
-  cursor: pointer;
+  flex: 0 0 40px; width: 40px; height: 40px; border: 0; border-radius: 12px;
+  background: #e5f3fc; color: var(--blue-dark); font-size: 27px; cursor: pointer;
+  transition: background .2s, transform .2s;
 }
-
+.cart-close:hover { background: #d1eafa; transform: rotate(90deg); }
 .cart-drawer .panel {
-  padding: 14px 0;
-  border: 0;
-  box-shadow: none;
+  padding: 18px; margin: 0 0 16px; background: #fff;
+  border: 1px solid #e0edf5; border-radius: 18px;
+  box-shadow: 0 6px 20px rgba(23, 59, 99, .06);
 }
-
-.cart-drawer .cart-layout {
-  display: block;
-}
-
+.cart-drawer .panel h3 { margin: 0 0 14px; color: var(--blue-dark); font-size: 17px; }
+.cart-drawer .cart-layout { display: block; }
 .cart-drawer .cart-item {
-  align-items: flex-start;
+  display: flex; align-items: flex-start; padding: 14px 0;
+  border-bottom: 1px solid #edf2f6;
 }
-
-body.cart-open {
-  overflow: hidden;
+.cart-drawer .cart-item:last-child { border-bottom: 0; }
+.cart-drawer .cart-item strong { display: block; color: #173b63; font-size: 15px; }
+.cart-drawer .cart-item p { margin: 5px 0 10px; color: #1976b9; font-weight: 800; }
+.cart-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.cart-controls button {
+  min-width: 34px; min-height: 34px; padding: 4px 10px; border: 1px solid #d7e8f3;
+  border-radius: 9px; background: #f0f8fd; color: #12558a; cursor: pointer; font-weight: 700;
 }
-
+.cart-controls button:hover { background: #dff1fc; }
+.cart-controls button:last-child { margin-right: 6px; background: #fff1f0; color: #c62828; border-color: #ffd8d5; }
+.cart-drawer .total-line {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 11px 0; border-bottom: 1px dashed #dbe8f0;
+}
+.cart-drawer .total-line strong { color: var(--blue-dark); font-size: 18px; }
+.cart-drawer #total { color: #c62828; font-size: 21px; }
+.cart-drawer #checkoutForm label { display: block; margin: 10px 0 5px; color: #234c6b; font-weight: 700; }
+.cart-drawer #checkoutForm input:not([type=radio]),
+.cart-drawer #checkoutForm textarea {
+  width: 100%; padding: 11px 12px; border: 1px solid #d4e4ef; border-radius: 11px;
+  background: #fbfdff; outline: none;
+}
+.cart-drawer #checkoutForm input:focus, .cart-drawer #checkoutForm textarea:focus {
+  border-color: #1976b9; box-shadow: 0 0 0 3px rgba(25, 118, 185, .1);
+}
+body.cart-open { overflow: hidden; }
 @media (max-width: 480px) {
-  .cart-drawer {
-    padding: 15px;
-  }
+  .cart-drawer { padding: 15px; }
+  .cart-drawer-header { top: -15px; }
+  .cart-drawer .panel { padding: 14px; border-radius: 15px; }
 }
   
   </style>
@@ -978,6 +975,19 @@ function normalizeCategory(value) {
   return "medical";
 }
 
+// توحيد السعر: إذا وصل السعر بالجنيه مضروبًا في 100 (مثل 75000 بدل 750)، نصححه.
+function normalizePrice(rawPrice) {
+  const cleaned = String(rawPrice ?? "").trim().replace(/[,،]/g, "").replace(/[^\d.]/g, "");
+  if (!cleaned) return "";
+  const value = Number(cleaned);
+  if (!Number.isFinite(value)) return "";
+  return value >= 10000 && Number.isInteger(value) ? String(value / 100) : String(value);
+}
+
+function formatEGP(value) {
+  return Number(value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 }) + " جنيه";
+}
+
 function convertSheetToProducts(rows) {
   if (!rows.length) return [];
 
@@ -1028,7 +1038,7 @@ function convertSheetToProducts(rows) {
       name: row[nameIndex] || "",
 
       price: priceIndex !== -1
-        ? row[priceIndex] || ""
+        ? normalizePrice(row[priceIndex])
         : "",
 
       description: descriptionIndex !== -1
@@ -1243,10 +1253,7 @@ document.querySelector(".cart-link").addEventListener("click", function (event) 
 });
 
 function getProductPrice(product) {
-  const value = String(product.price || "")
-    .replace(/,/g, "")
-    .replace(/[^\d.]/g, "");
-
+  const value = normalizePrice(product.price);
   return value ? Number(value) : 0;
 }
 
@@ -1330,6 +1337,9 @@ function renderCart() {
   }
 
   cart.forEach(item => {
+    const currentProduct = allProducts.find(product => String(product.id) === String(item.id));
+    if (currentProduct && currentProduct.price !== undefined) item.price = currentProduct.price;
+    else item.price = normalizePrice(item.price);
     const price = getProductPrice(item);
     subtotal += price * item.quantity;
 
@@ -1343,7 +1353,7 @@ function renderCart() {
 
     const priceText = document.createElement("p");
     priceText.textContent = price > 0
-      ? price + " جنيه × " + item.quantity
+      ? formatEGP(price) + " × " + item.quantity
       : "السعر عند الاستفسار";
 
     const controls = document.createElement("div");
@@ -1375,12 +1385,13 @@ function renderCart() {
     cartItems.appendChild(row);
   });
 
-  subtotalElement.textContent = subtotal + " جنيه";
-  totalElement.textContent = subtotal + " جنيه";
+  subtotalElement.textContent = formatEGP(subtotal);
+  totalElement.textContent = formatEGP(subtotal);
 
   if (hasUnknownPrice) {
     totalElement.textContent += " + منتجات تحتاج تأكيد السعر";
   }
+  saveCart();
 }
 
 /* إرسال تفاصيل الطلب إلى واتساب */
