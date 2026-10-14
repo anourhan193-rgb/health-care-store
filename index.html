@@ -1184,32 +1184,26 @@ function normalizeCategory(value) {
 }
 
 
- 
 /*
   إصلاح الأسعار:
-  - نستخدم السعر الموجود في Google Sheets كما هو.
+  - نستخدم القيمة الموجودة في Google Sheets كما هي.
   - 750 تظل 750، بدون قسمة على 10 أو 100.
-  - نحول الفاصلة العشرية إلى نقطة.
-  - نكتب السعر بالجنيه مباشرة في Google Sheets.
+  - تحويل الفاصلة العشرية إلى نقطة.
 */
 function normalizePrice(rawPrice) {
   let cleaned = String(rawPrice ?? "").trim();
 
   if (!cleaned) return "";
 
-  // إزالة رمز العملة والمسافات وفواصل الآلاف العربية
-  cleaned = cleaned.replace(/[جنيهج\.]/g, "");
   cleaned = cleaned.replace(/[٬\s]/g, "");
+  cleaned = cleaned.replace(/[^\d.,]/g, "");
 
-  // تحويل الفاصلة العشرية إلى نقطة
   if (cleaned.includes(",") && !cleaned.includes(".")) {
     cleaned = cleaned.replace(",", ".");
+  } else if (cleaned.includes(",") && cleaned.includes(".")) {
+    cleaned = cleaned.replace(/,/g, "");
   }
 
-  // السماح بالأرقام والنقطة فقط
-  cleaned = cleaned.replace(/[^\d.]/g, "");
-
-  // رفض السعر إذا احتوى على أكثر من نقطة
   if ((cleaned.match(/\./g) || []).length > 1) return "";
 
   const value = Number(cleaned);
@@ -1218,7 +1212,6 @@ function normalizePrice(rawPrice) {
 
   return String(value);
 }
-
 
 function formatEGP(value) {
   return Number(value || 0).toLocaleString("en-US", {
@@ -1450,7 +1443,6 @@ async function loadProductsFromSheet() {
   }
 }
 
-
 /* حفظ السلة محليًا */
 try {
   const savedCart = JSON.parse(
@@ -1511,7 +1503,7 @@ document.querySelector(".cart-link").addEventListener("click", function(event) {
   openCart();
 });
 
-/* الأسعار: لا نقسم السعر على 10 أو 100 */
+/* الأسعار */
 function getProductPrice(product) {
   const value = normalizePrice(product.price);
   return value === "" ? 0 : Number(value);
@@ -1597,6 +1589,7 @@ function renderCart() {
   cartCount.textContent = count;
 
   let subtotal = 0;
+
   const hasUnknownPrice = cart.some(item => {
     const current = allProducts.find(
       product => String(product.id) === String(item.id)
@@ -1687,13 +1680,14 @@ document.getElementById("checkoutForm").addEventListener(
     event.preventDefault();
 
     if (!cart.length) {
-      alert("أضيف منتجًا إلى السلة أولًا.");
+      alert("أضيفي منتجًا إلى السلة أولًا.");
       return;
     }
 
     const name = document.getElementById("customerName").value.trim();
     const phone = document.getElementById("customerPhone").value.trim();
     const address = document.getElementById("customerAddress").value.trim();
+
     const paymentInput = document.querySelector(
       'input[name="payment"]:checked'
     );
@@ -1716,24 +1710,17 @@ document.getElementById("checkoutForm").addEventListener(
       );
 
       const price = current
-       
-function normalizePrice(rawPrice) {
-  const cleaned = String(rawPrice ?? "")
-    .trim()
-    .replace(/[٬,\s]/g, "")
-    .replace(/[^0-9.]/g, "");
+        ? normalizePrice(current.price)
+        : normalizePrice(item.price);
 
-  if (!cleaned) return "";
-
-  const value = Number(cleaned);
-
-  if (!Number.isFinite(value) || value < 0) {
-    return "";
-  }
-
-  return String(value);
-}
-
+      message += "- " + item.name +
+        " | الكمية: " + item.quantity +
+        " | السعر: " +
+        (price !== ""
+          ? formatEGP(Number(price))
+          : "عند الاستفسار") +
+        "\n";
+    });
 
     message += "\nالإجمالي المعروف: " +
       document.getElementById("subtotal").textContent;
@@ -1822,6 +1809,7 @@ document.getElementById("currentYear").textContent =
 renderCart();
 loadProductsFromSheet();
 </script>
+
 
 </body>
 </html>
