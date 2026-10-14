@@ -1376,86 +1376,64 @@ function filterProducts() {
   renderProducts(filtered);
 }
 
-```javascript
 async function loadProductsFromSheet() {
-  sheetStatus.textContent = "جارٍ تحميل المنتجات من Google Sheets...";
-  sheetStatus.className = "status-message";
+  if (sheetStatus) {
+    sheetStatus.textContent = "جارٍ تحميل المنتجات...";
+    sheetStatus.className = "status-message";
+  }
 
   try {
-    // استخدام رابط CSV المنشور مباشرة دون تحويله
     const response = await fetch(SHEET_CSV_URL, {
-      cache: "no-store",
-      redirect: "follow"
+      cache: "no-store"
     });
 
     if (!response.ok) {
-      throw new Error("تعذر الوصول إلى الشيت: " + response.status);
+      throw new Error("تعذر تحميل الشيت: " + response.status);
     }
 
     const csvText = await response.text();
 
     if (
-      /^\s*(<!DOCTYPE html|<html)/i.test(csvText) ||
-      !csvText.trim()
+      !csvText.trim() ||
+      /^\s*(<!DOCTYPE html|<html)/i.test(csvText)
     ) {
-      throw new Error("لم يتم استلام بيانات CSV صحيحة من الشيت.");
+      throw new Error("رابط الشيت لم يُرجع بيانات CSV صحيحة.");
     }
 
     const rows = parseCSV(csvText);
 
     if (rows.length < 2) {
-      throw new Error("الشيت لا يحتوي على منتجات أو صفوف بيانات.");
+      throw new Error("لا توجد منتجات في الشيت.");
     }
 
-    const products = convertSheetToProducts(rows);
+    const loadedProducts = convertSheetToProducts(rows);
 
-    if (!products.length) {
-      throw new Error("لم يتم العثور على منتجات. راجعي أسماء الأعمدة.");
+    if (!loadedProducts || loadedProducts.length === 0) {
+      throw new Error("لم يتم العثور على منتجات صالحة.");
     }
 
-    allProducts = products;
+    allProducts = loadedProducts;
 
-    // تحديث المنتجات المعروضة حسب البحث والقسم المختار
     filterProducts();
-
-    sheetStatus.textContent =
-      "تم تحميل " + allProducts.length + " منتج بنجاح.";
-    sheetStatus.className = "status-message";
-
-    // تحديث الأسعار المحفوظة في السلة من الشيت
     renderCart();
 
-  } catch (error) {
-    console.error("Google Sheets error:", error);
-
-    sheetStatus.textContent =
-      "تعذر تحميل المنتجات. افتحي Console لمعرفة سبب الخطأ.";
-    sheetStatus.className = "status-message error";
-  }
-}
-
-    const rows = parseCSV(csvText);
-    allProducts = convertSheetToProducts(rows);
-
-    if (!allProducts.length) {
+    if (sheetStatus) {
       sheetStatus.textContent =
-        "تم الاتصال بالشيت، لكن لا توجد منتجات. راجعي الأعمدة والبيانات.";
-      renderProducts([]);
-      return;
+        "تم تحميل " + allProducts.length + " منتج بنجاح.";
+      sheetStatus.className = "status-message";
     }
 
-    sheetStatus.textContent =
-      "تم تحميل " + allProducts.length + " منتج بنجاح.";
-
-    renderProducts(allProducts);
   } catch (error) {
     console.error("Google Sheets error:", error);
 
-    sheetStatus.textContent =
-      "تعذر تحميل المنتجات. راجعي رابط نشر الشيت وصلاحيات الوصول.";
-    sheetStatus.className = "status-message error";
+    if (sheetStatus) {
+      sheetStatus.textContent =
+        "تعذر تحميل المنتجات. تأكدي من نشر الشيت وإمكانية الوصول إليه.";
+      sheetStatus.className = "status-message error";
+    }
   }
 }
+
 
 /* حفظ السلة محليًا */
 try {
