@@ -1183,19 +1183,34 @@ function normalizeCategory(value) {
   return "homecare";
 }
 
+
+ 
 /*
   إصلاح الأسعار:
-  نستخدم القيمة الموجودة في الشيت كما هي.
-  مثال: 750 تظل 750، ولا نقسمها على 10 أو 100.
-  اكتبي السعر بالجنيه مباشرة في Google Sheets.
+  - نستخدم السعر الموجود في Google Sheets كما هو.
+  - 750 تظل 750، بدون قسمة على 10 أو 100.
+  - نحول الفاصلة العشرية إلى نقطة.
+  - نكتب السعر بالجنيه مباشرة في Google Sheets.
 */
 function normalizePrice(rawPrice) {
-  let cleaned = String(rawPrice ?? "")
-    .trim()
-    .replace(/[٬,\s]/g, "")
-    .replace(/[^\d.]/g, "");
+  let cleaned = String(rawPrice ?? "").trim();
 
   if (!cleaned) return "";
+
+  // إزالة رمز العملة والمسافات وفواصل الآلاف العربية
+  cleaned = cleaned.replace(/[جنيهج\.]/g, "");
+  cleaned = cleaned.replace(/[٬\s]/g, "");
+
+  // تحويل الفاصلة العشرية إلى نقطة
+  if (cleaned.includes(",") && !cleaned.includes(".")) {
+    cleaned = cleaned.replace(",", ".");
+  }
+
+  // السماح بالأرقام والنقطة فقط
+  cleaned = cleaned.replace(/[^\d.]/g, "");
+
+  // رفض السعر إذا احتوى على أكثر من نقطة
+  if ((cleaned.match(/\./g) || []).length > 1) return "";
 
   const value = Number(cleaned);
 
@@ -1203,6 +1218,7 @@ function normalizePrice(rawPrice) {
 
   return String(value);
 }
+
 
 function formatEGP(value) {
   return Number(value || 0).toLocaleString("en-US", {
