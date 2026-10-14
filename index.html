@@ -1542,7 +1542,7 @@ function changeQuantity(productId, amount) {
 
   if (!item) return;
 
-  if (amount > 0 && item.quantity >= 99) {
+  if (amount > 0 && item.quantity >= 50) {
     alert("وصلتِ إلى الحد الأقصى للكمية.");
     return;
   }
@@ -1671,7 +1671,7 @@ document.getElementById("checkoutForm").addEventListener(
     event.preventDefault();
 
     if (!cart.length) {
-      alert("أضيفي منتجًا إلى السلة أولًا.");
+      alert("أضيف منتجًا إلى السلة أولًا.");
       return;
     }
 
@@ -1700,15 +1700,24 @@ document.getElementById("checkoutForm").addEventListener(
       );
 
       const price = current
-        ? normalizePrice(current.price)
-        : normalizePrice(item.price);
+       
+function normalizePrice(rawPrice) {
+  const cleaned = String(rawPrice ?? "")
+    .trim()
+    .replace(/[٬,\s]/g, "")
+    .replace(/[^0-9.]/g, "");
 
-      message += "- " + item.name +
-        " × " + item.quantity +
-        " | سعر الوحدة: " +
-        (price !== "" ? formatEGP(price) : "عند الاستفسار") +
-        "\n";
-    });
+  if (!cleaned) return "";
+
+  const value = Number(cleaned);
+
+  if (!Number.isFinite(value) || value < 0) {
+    return "";
+  }
+
+  return String(value);
+}
+
 
     message += "\nالإجمالي المعروف: " +
       document.getElementById("subtotal").textContent;
