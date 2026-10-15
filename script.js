@@ -634,7 +634,7 @@ function submitOrder() {
   }
 
   if (!cart.length) {
-    alert("السلة فارغة. أضيفي منتجات قبل إرسال الطلب.");
+    alert("السلة فارغة. أضف منتجات قبل إرسال الطلب.");
     return;
   }
 
@@ -714,7 +714,7 @@ async function loadProductsFromSheet() {
 
     alert(
       "تعذر تحميل المنتجات من Google Sheets. " +
-      "راجعي رابط الشيت وطريقة نشره."
+      "راجع رابط الشيت وطريقة نشره."
     );
   }
 }
