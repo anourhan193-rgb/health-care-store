@@ -1397,7 +1397,7 @@ function renderProducts(products) {
     const description = document.createElement("p");
     description.className = "product-description";
     description.textContent = product.description ||
-      "للاستفسار عن تفاصيل المنتج، تواصلي معنا.";
+      "للاستفسار عن تفاصيل المنتج، تواصل معنا.";
 
     const minimumNote = document.createElement("p");
     minimumNote.className = "product-description";
@@ -1408,7 +1408,7 @@ function renderProducts(products) {
     const price = document.createElement("div");
     price.className = "product-price";
     price.textContent = product.price !== ""
-      ? formatEGP(product.price) + " للمجموعة"
+      ? formatEGP(product.price) + " "
       : "السعر عند الاستفسار";
 
     const actions = document.createElement("div");
@@ -1477,7 +1477,7 @@ async function loadProductsFromSheet() {
       /^\s*(<!DOCTYPE html|<html)/i.test(csvText)
     ) {
       throw new Error(
-        "رابط الشيت لم يُرجع بيانات CSV. تحققي من نشر الشيت."
+        "رابط الشيت لم يُرجع بيانات CSV. تحقق من نشر الشيت."
       );
     }
 
@@ -1625,7 +1625,7 @@ function addToCart(productId) {
 
   if (existing) {
     if (existing.quantity >= MAX_CART_QUANTITY) {
-      alert("وصلتِ إلى الحد الأقصى للكمية.");
+      alert("وصلت إلى الحد الأقصى للكمية.");
       return;
     }
 
@@ -1666,7 +1666,7 @@ function changeQuantity(productId, amount) {
   }
 
   if (amount > 0 && item.quantity >= MAX_CART_QUANTITY) {
-    alert("وصلتِ إلى الحد الأقصى للكمية.");
+    alert("وصلت إلى الحد الأقصى للكمية.");
     return;
   }
 
@@ -1764,7 +1764,7 @@ function renderCart() {
     const priceText = document.createElement("p");
     priceText.textContent =
       item.price !== ""
-        ? formatEGP(item.price) + " للمجموعة (" + item.minQuantity + " قطعة) | الكمية: " +
+        ? formatEGP(item.price) + "  (" + item.minQuantity + " قطعة) | الكمية: " +
           item.quantity + " | الإجمالي: " + formatEGP(unitPrice * item.quantity)
         : "السعر عند الاستفسار";
 
