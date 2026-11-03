@@ -1248,7 +1248,7 @@ function normalizeMinimumQuantity(value) {
 function formatEGP(value) {
   return Number(value || 0).toLocaleString("en-US", {
     maximumFractionDigits: 2
-  }) + " جنيه";
+  }) + "جنية";
 }
 
 /* تحويل صفوف الشيت إلى منتجات */
@@ -1822,7 +1822,7 @@ document.getElementById("checkoutForm").addEventListener(
     event.preventDefault();
 
     if (!cart.length) {
-      alert("أضيفي منتجًا إلى السلة أولًا.");
+      alert("أضف منتجًا إلى السلة أولًا.");
       return;
     }
 
@@ -1844,7 +1844,7 @@ document.getElementById("checkoutForm").addEventListener(
 
     if (!name || !phone || !address || !paymentInput) {
       alert(
-        "من فضلك أدخلي الاسم ورقم الهاتف والعنوان وطريقة الدفع."
+        "من فضلك أدخل الاسم ورقم الهاتف والعنوان وطريقة الدفع."
       );
       return;
     }
