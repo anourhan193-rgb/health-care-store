@@ -1089,7 +1089,7 @@ const SHEET_CSV_URL =
 
 const WHATSAPP_NUMBER = "201208791400";
 
-const MAX_CART_QUANTITY = 100;
+const MAX_CART_QUANTITY = 9999;
 
 let allProducts = [];
 let activeCategory = "all";
@@ -1403,12 +1403,12 @@ function renderProducts(products) {
     minimumNote.className = "product-description";
     minimumNote.textContent =
       "أقل كمية للطلب: " +
-      normalizeMinimumQuantity(product.minQuantity);
+      normalizeMinimumQuantity(product.minQuantity) + " قطعة";
 
     const price = document.createElement("div");
     price.className = "product-price";
     price.textContent = product.price !== ""
-      ? formatEGP(product.price)
+      ? formatEGP(product.price) + " للمجموعة"
       : "السعر عند الاستفسار";
 
     const actions = document.createElement("div");
@@ -1750,8 +1750,8 @@ function renderCart() {
       );
     }
 
-    const price = getProductPrice(item);
-    subtotal += price;
+    const unitPrice = Number(item.price || 0) / Math.max(item.minQuantity, 1);
+    subtotal += unitPrice * item.quantity;
 
     const row = document.createElement("div");
     row.className = "cart-item";
@@ -1762,9 +1762,11 @@ function renderCart() {
     name.textContent = item.name;
 
     const priceText = document.createElement("p");
-    priceText.textContent = item.price !== ""
-  ? formatEGP(price) + " | الكمية: " + item.quantity
-  : "السعر عند الاستفسار";
+    priceText.textContent =
+      item.price !== ""
+        ? formatEGP(item.price) + " للمجموعة (" + item.minQuantity + " قطعة) | الكمية: " +
+          item.quantity + " | الإجمالي: " + formatEGP(unitPrice * item.quantity)
+        : "السعر عند الاستفسار";
 
     const controls = document.createElement("div");
     controls.className = "cart-controls";
@@ -1773,8 +1775,7 @@ function renderCart() {
     minus.type = "button";
     minus.textContent = "−";
     minus.setAttribute("aria-label", "تقليل الكمية");
-    minus.disabled =
-      item.quantity <= normalizeMinimumQuantity(item.minQuantity);
+    minus.disabled = item.quantity <= normalizeMinimumQuantity(item.minQuantity);
     minus.addEventListener("click", () => {
       changeQuantity(item.id, -1);
     });
@@ -1843,7 +1844,7 @@ document.getElementById("checkoutForm").addEventListener(
 
     if (!name || !phone || !address || !paymentInput) {
       alert(
-        "من فضلك أدخل الاسم ورقم الهاتف والعنوان وطريقة الدفع."
+        "من فضلك أدخلي الاسم ورقم الهاتف والعنوان وطريقة الدفع."
       );
       return;
     }
@@ -1860,16 +1861,17 @@ document.getElementById("checkoutForm").addEventListener(
         product => String(product.id) === String(item.id)
       );
 
-      const price = current
-        ? normalizePrice(current.price)
-        : normalizePrice(item.price);
+      const unitPrice = Number(
+        current ? current.price : item.price || 0
+      ) / Math.max(
+        current ? current.minQuantity : item.minQuantity || 1,
+        1
+      );
 
       message += "- " + item.name +
         " | الكمية: " + item.quantity +
-        " | السعر: " +
-        (price !== ""
-          ? formatEGP(Number(price))
-          : "عند الاستفسار") +
+        " | سعر القطعة: " + formatEGP(unitPrice) +
+        " | الإجمالي: " + formatEGP(unitPrice * item.quantity) +
         "\n";
     });
 
@@ -1965,7 +1967,6 @@ document.getElementById("currentYear").textContent =
 renderCart();
 loadProductsFromSheet();
 </script>
-
 
 </body>
 </html>
