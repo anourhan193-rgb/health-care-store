@@ -1089,7 +1089,7 @@ const SHEET_CSV_URL =
 
 const WHATSAPP_NUMBER = "201208791400";
 
-const MAX_CART_QUANTITY = 9999;
+const MAX_CART_QUANTITY = 100;
 
 let allProducts = [];
 let activeCategory = "all";
@@ -1751,7 +1751,7 @@ function renderCart() {
     }
 
     const price = getProductPrice(item);
-    subtotal += price * item.quantity;
+    subtotal += price;
 
     const row = document.createElement("div");
     row.className = "cart-item";
@@ -1763,8 +1763,8 @@ function renderCart() {
 
     const priceText = document.createElement("p");
     priceText.textContent = item.price !== ""
-      ? formatEGP(price) + " × " + item.quantity
-      : "السعر عند الاستفسار";
+  ? formatEGP(price) + " | الكمية: " + item.quantity
+  : "السعر عند الاستفسار";
 
     const controls = document.createElement("div");
     controls.className = "cart-controls";
@@ -1843,7 +1843,7 @@ document.getElementById("checkoutForm").addEventListener(
 
     if (!name || !phone || !address || !paymentInput) {
       alert(
-        "من فضلك أدخلي الاسم ورقم الهاتف والعنوان وطريقة الدفع."
+        "من فضلك أدخل الاسم ورقم الهاتف والعنوان وطريقة الدفع."
       );
       return;
     }
