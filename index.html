@@ -1089,6 +1089,8 @@ const SHEET_CSV_URL =
 
 const WHATSAPP_NUMBER = "201208791400";
 
+const MAX_CART_QUANTITY = 9999;
+
 let allProducts = [];
 let activeCategory = "all";
 let cart = [];
@@ -1119,10 +1121,7 @@ function parseCSV(csvText) {
     } else if (char === "," && !inQuotes) {
       row.push(cell.trim());
       cell = "";
-    } else if (
-      (char === "\n" || char === "\r") &&
-      !inQuotes
-    ) {
+    } else if ((char === "\n" || char === "\r") && !inQuotes) {
       if (char === "\r" && next === "\n") i++;
 
       row.push(cell.trim());
@@ -1167,7 +1166,6 @@ function findColumn(headers, names) {
   return -1;
 }
 
-/* تصنيف المنتجات */
 function normalizeCategory(value) {
   const category = String(value || "").trim().toLowerCase();
 
@@ -1198,15 +1196,6 @@ function normalizeCategory(value) {
   return "homecare";
 }
 
-/*
-  الأسعار:
-  750 تبقى 750.
-  75,50 تتحول إلى 75.50.
-  1,200.50 تتحول إلى 1200.50.
-  لا توجد قسمة على 10 أو 100.
-
-  لتجنب الالتباس، اكتبي أسعار الشيت دون فواصل آلاف.
-*/
 function normalizePrice(rawPrice) {
   let cleaned = String(rawPrice ?? "").trim();
 
@@ -1218,10 +1207,8 @@ function normalizePrice(rawPrice) {
   if (!cleaned) return "";
 
   if (cleaned.includes(",") && cleaned.includes(".")) {
-    // عند وجود العلامتين، نعتبر الفاصلة فاصل آلاف.
     cleaned = cleaned.replace(/,/g, "");
   } else if (cleaned.includes(",")) {
-    // فاصلة واحدة فقط تُعامل كفاصلة عشرية.
     if ((cleaned.match(/,/g) || []).length > 1) {
       return "";
     }
@@ -1240,6 +1227,22 @@ function normalizePrice(rawPrice) {
   }
 
   return String(value);
+}
+
+function normalizeMinimumQuantity(value) {
+  const cleaned = String(value ?? "").trim()
+    .replace(/[٠-٩]/g, digit => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[۰-۹]/g, digit => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
+
+  if (!/^\d+$/.test(cleaned)) return 1;
+
+  const quantity = Number(cleaned);
+
+  return Number.isSafeInteger(quantity) &&
+    quantity >= 1 &&
+    quantity <= MAX_CART_QUANTITY
+      ? quantity
+      : 1;
 }
 
 function formatEGP(value) {
@@ -1283,6 +1286,16 @@ function convertSheetToProducts(rows) {
     "id", "productid", "كود", "كود المنتج", "رقم المنتج"
   ]);
 
+  const minimumQuantityIndex = findColumn(headers, [
+    "minimumquantity",
+    "minquantity",
+    "minimumorder",
+    "الحد الأدنى للطلب",
+    "الحد الادنى للطلب",
+    "اقل كمية للطلب",
+    "أقل كمية للطلب"
+  ]);
+
   if (nameIndex === -1) {
     throw new Error(
       "لم أجد عمود اسم المنتج. العناوين المقروءة: " +
@@ -1318,7 +1331,11 @@ function convertSheetToProducts(rows) {
         categoryIndex !== -1
           ? row[categoryIndex] || ""
           : ""
-      )
+      ),
+
+      minQuantity: minimumQuantityIndex !== -1
+        ? normalizeMinimumQuantity(row[minimumQuantityIndex])
+        : 1
     }));
 }
 
@@ -1382,6 +1399,12 @@ function renderProducts(products) {
     description.textContent = product.description ||
       "للاستفسار عن تفاصيل المنتج، تواصلي معنا.";
 
+    const minimumNote = document.createElement("p");
+    minimumNote.className = "product-description";
+    minimumNote.textContent =
+      "أقل كمية للطلب: " +
+      normalizeMinimumQuantity(product.minQuantity);
+
     const price = document.createElement("div");
     price.className = "product-price";
     price.textContent = product.price !== ""
@@ -1401,7 +1424,7 @@ function renderProducts(products) {
     });
 
     actions.appendChild(orderButton);
-    info.append(name, description, price, actions);
+    info.append(name, description, minimumNote, price, actions);
     card.append(imageContainer, info);
     productsGrid.appendChild(card);
   });
@@ -1515,9 +1538,13 @@ try {
         id: String(item.id),
         name: item.name,
         price: normalizePrice(item.price),
+        minQuantity: normalizeMinimumQuantity(item.minQuantity),
         quantity: Math.max(
-          1,
-          Math.min(99, Math.floor(Number(item.quantity) || 1))
+          normalizeMinimumQuantity(item.minQuantity),
+          Math.min(
+            MAX_CART_QUANTITY,
+            Math.floor(Number(item.quantity) || 1)
+          )
         )
       }));
   }
@@ -1591,23 +1618,26 @@ function addToCart(productId) {
     return;
   }
 
+  const minimum = normalizeMinimumQuantity(product.minQuantity);
   const existing = cart.find(
     item => String(item.id) === String(productId)
   );
 
   if (existing) {
-    if (existing.quantity >= 99) {
+    if (existing.quantity >= MAX_CART_QUANTITY) {
       alert("وصلتِ إلى الحد الأقصى للكمية.");
       return;
     }
 
-    existing.quantity += 1;
+    existing.minQuantity = minimum;
+    existing.quantity = Math.max(existing.quantity + 1, minimum);
   } else {
     cart.push({
       id: String(product.id),
       name: product.name,
       price: normalizePrice(product.price),
-      quantity: 1
+      minQuantity: minimum,
+      quantity: minimum
     });
   }
 
@@ -1623,11 +1653,24 @@ function changeQuantity(productId, amount) {
 
   if (!item) return;
 
-  if (amount > 0 && item.quantity >= 50) {
+  const currentProduct = allProducts.find(
+    product => String(product.id) === String(productId)
+  );
+
+  const minimum = currentProduct
+    ? normalizeMinimumQuantity(currentProduct.minQuantity)
+    : normalizeMinimumQuantity(item.minQuantity);
+
+  if (amount < 0 && item.quantity <= minimum) {
+    return;
+  }
+
+  if (amount > 0 && item.quantity >= MAX_CART_QUANTITY) {
     alert("وصلتِ إلى الحد الأقصى للكمية.");
     return;
   }
 
+  item.minQuantity = minimum;
   item.quantity += amount;
 
   if (item.quantity <= 0) {
@@ -1666,7 +1709,6 @@ function renderCart() {
   cartCount.textContent = count;
 
   let subtotal = 0;
-
   const hasUnknownPrice = cart.some(item => {
     const current = allProducts.find(
       product => String(product.id) === String(item.id)
@@ -1693,6 +1735,19 @@ function renderCart() {
     if (currentProduct) {
       item.name = currentProduct.name;
       item.price = normalizePrice(currentProduct.price);
+      item.minQuantity = normalizeMinimumQuantity(
+        currentProduct.minQuantity
+      );
+      item.quantity = Math.max(
+        item.quantity,
+        item.minQuantity
+      );
+    } else {
+      item.minQuantity = normalizeMinimumQuantity(item.minQuantity);
+      item.quantity = Math.max(
+        item.quantity,
+        item.minQuantity
+      );
     }
 
     const price = getProductPrice(item);
@@ -1718,6 +1773,8 @@ function renderCart() {
     minus.type = "button";
     minus.textContent = "−";
     minus.setAttribute("aria-label", "تقليل الكمية");
+    minus.disabled =
+      item.quantity <= normalizeMinimumQuantity(item.minQuantity);
     minus.addEventListener("click", () => {
       changeQuantity(item.id, -1);
     });
@@ -1908,7 +1965,6 @@ document.getElementById("currentYear").textContent =
 renderCart();
 loadProductsFromSheet();
 </script>
-
 
 
 </body>
