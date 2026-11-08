@@ -1023,7 +1023,7 @@ footer p { margin: 5px 0 0; font-size: 12px; }
       </div>
 
       <div class="total-line">
-        <span>إجمالي المنتجات</span>
+        <span>إجمالي المن��جات</span>
         <strong id="total">0 جنيه</strong>
       </div>
 
@@ -1054,8 +1054,13 @@ footer p { margin: 5px 0 0; font-size: 12px; }
           <strong>طريقة الدفع</strong>
           <label>
             <input type="radio" name="payment"
-                   value="عند الاستلام" checked>
-            الدفع عند الاستلام
+                   value="مقدم 25% لتأكيد الحجز والباقي عند الاستلام" checked>
+            دفع مقدم 25% لتأكيد الحجز، والباقي عند الاستلام
+          </label>
+          <label>
+            <input type="radio" name="payment"
+                   value="عند الاستلام">
+            الدفع كاملًا عند الاستلام
           </label>
           <label>
             <input type="radio" name="payment"
@@ -1095,547 +1100,236 @@ let allProducts = [];
 let activeCategory = "all";
 let cart = [];
 
-const productsGrid = document.getElementById("productsGrid");
-const sheetStatus = document.getElementById("sheetStatus");
-const emptyProducts = document.getElementById("emptyProducts");
-const productSearch = document.getElementById("productSearch");
+const CART_STORAGE_KEY = "healthCareCart";
 
-/* قراءة CSV مع دعم علامات الاقتباس والفواصل داخل الخلايا */
-function parseCSV(csvText) {
-  const rows = [];
-  let row = [];
-  let cell = "";
-  let inQuotes = false;
-
-  csvText = csvText.replace(/^\uFEFF/, "");
-
-  for (let i = 0; i < csvText.length; i++) {
-    const char = csvText[i];
-    const next = csvText[i + 1];
-
-    if (char === '"' && inQuotes && next === '"') {
-      cell += '"';
-      i++;
-    } else if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
-      row.push(cell.trim());
-      cell = "";
-    } else if ((char === "\n" || char === "\r") && !inQuotes) {
-      if (char === "\r" && next === "\n") i++;
-
-      row.push(cell.trim());
-
-      if (row.some(value => value !== "")) {
-        rows.push(row);
-      }
-
-      row = [];
-      cell = "";
-    } else {
-      cell += char;
-    }
-  }
-
-  row.push(cell.trim());
-
-  if (row.some(value => value !== "")) {
-    rows.push(row);
-  }
-
-  return rows;
-}
-
-function normalizeHeader(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[\s_-]+/g, "")
-    .replace(/[أإآ]/g, "ا");
-}
-
-function findColumn(headers, names) {
-  const normalized = headers.map(normalizeHeader);
-
-  for (const name of names) {
-    const index = normalized.indexOf(normalizeHeader(name));
-
-    if (index !== -1) return index;
-  }
-
-  return -1;
-}
-
-function normalizeCategory(value) {
-  const category = String(value || "").trim().toLowerCase();
-
-  if (
-    category.includes("laboratory") ||
-    category.includes("laboratories") ||
-    category.includes("lab") ||
-    category.includes("معمل") ||
-    category.includes("تحاليل") ||
-    category.includes("مختبر")
-  ) {
-    return "laboratory";
-  }
-
-  if (
-    category.includes("student") ||
-    category.includes("college") ||
-    category.includes("science") ||
-    category.includes("students") ||
-    category.includes("كلية") ||
-    category.includes("كليات") ||
-    category.includes("علمي") ||
-    category.includes("طلاب")
-  ) {
-    return "students";
-  }
-
-  return "homecare";
-}
-
-function normalizePrice(rawPrice) {
-  let cleaned = String(rawPrice ?? "").trim();
-
-  if (!cleaned) return "";
-
-  cleaned = cleaned.replace(/[٬\s]/g, "");
-  cleaned = cleaned.replace(/[^\d.,]/g, "");
-
-  if (!cleaned) return "";
-
-  if (cleaned.includes(",") && cleaned.includes(".")) {
-    cleaned = cleaned.replace(/,/g, "");
-  } else if (cleaned.includes(",")) {
-    if ((cleaned.match(/,/g) || []).length > 1) {
-      return "";
-    }
-
-    cleaned = cleaned.replace(",", ".");
-  }
-
-  if ((cleaned.match(/\./g) || []).length > 1) {
-    return "";
-  }
-
-  const value = Number(cleaned);
-
-  if (!Number.isFinite(value) || value < 0) {
-    return "";
-  }
-
-  return String(value);
-}
-
-function normalizeMinimumQuantity(value) {
-  const cleaned = String(value ?? "").trim()
-    .replace(/[٠-٩]/g, digit => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
-    .replace(/[۰-۹]/g, digit => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
-
-  if (!/^\d+$/.test(cleaned)) return 1;
-
-  const quantity = Number(cleaned);
-
-  return Number.isSafeInteger(quantity) &&
-    quantity >= 1 &&
-    quantity <= MAX_CART_QUANTITY
-      ? quantity
-      : 1;
-}
-
-function formatEGP(value) {
-  return Number(value || 0).toLocaleString("en-US", {
-    maximumFractionDigits: 2
-  }) + "جنية";
-}
-
-/* تحويل صفوف الشيت إلى منتجات */
-function convertSheetToProducts(rows) {
-  if (!rows.length) return [];
-
-  const headers = rows[0];
-
-  const nameIndex = findColumn(headers, [
-    "name", "product", "productname",
-    "اسم المنتج", "اسم الصنف", "المنتج", "الصنف"
-  ]);
-
-  const priceIndex = findColumn(headers, [
-    "price", "productprice", "السعر",
-    "سعر المنتج", "سعر"
-  ]);
-
-  const descriptionIndex = findColumn(headers, [
-    "description", "details", "الوصف",
-    "وصف المنتج", "التفاصيل"
-  ]);
-
-  const imageIndex = findColumn(headers, [
-    "image", "imageurl", "photo", "picture",
-    "الصورة", "رابط الصورة", "صورة المنتج"
-  ]);
-
-  const categoryIndex = findColumn(headers, [
-    "category", "productcategory",
-    "القسم", "التصنيف", "فئة المنتج", "الفئة"
-  ]);
-
-  const idIndex = findColumn(headers, [
-    "id", "productid", "كود", "كود المنتج", "رقم المنتج"
-  ]);
-
-  const minimumQuantityIndex = findColumn(headers, [
-    "minimumquantity",
-    "minquantity",
-    "minimumorder",
-    "الحد الأدنى للطلب",
-    "الحد الادنى للطلب",
-    "اقل كمية للطلب",
-    "أقل كمية للطلب"
-  ]);
-
-  if (nameIndex === -1) {
-    throw new Error(
-      "لم أجد عمود اسم المنتج. العناوين المقروءة: " +
-      headers.join(" | ")
-    );
-  }
-
-  return rows.slice(1)
-    .filter(row =>
-      row[nameIndex] &&
-      String(row[nameIndex]).trim() !== ""
-    )
-    .map((row, index) => ({
-      id: idIndex !== -1 && row[idIndex]
-        ? String(row[idIndex])
-        : String(index + 1),
-
-      name: row[nameIndex] || "",
-
-      price: priceIndex !== -1
-        ? normalizePrice(row[priceIndex])
-        : "",
-
-      description: descriptionIndex !== -1
-        ? row[descriptionIndex] || ""
-        : "",
-
-      image: imageIndex !== -1
-        ? row[imageIndex] || ""
-        : "",
-
-      category: normalizeCategory(
-        categoryIndex !== -1
-          ? row[categoryIndex] || ""
-          : ""
-      ),
-
-      minQuantity: minimumQuantityIndex !== -1
-        ? normalizeMinimumQuantity(row[minimumQuantityIndex])
-        : 1
-    }));
-}
-
-function safeImageURL(url) {
-  const value = String(url || "").trim();
-
-  if (/^https:\/\/\S+$/i.test(value)) {
-    return value;
-  }
-
-  return "";
-}
-
-/* عرض المنتجات */
-function renderProducts(products) {
-  productsGrid.replaceChildren();
-  emptyProducts.hidden = products.length !== 0;
-
-  products.forEach(product => {
-    const card = document.createElement("article");
-    card.className = "product-card";
-
-    const imageContainer = document.createElement("div");
-    imageContainer.className = "product-image";
-
-    const imageURL = safeImageURL(product.image);
-
-    if (imageURL) {
-      const image = document.createElement("img");
-      image.src = imageURL;
-      image.alt = product.name;
-      image.loading = "lazy";
-
-      image.onerror = function () {
-        imageContainer.replaceChildren();
-
-        const placeholder = document.createElement("span");
-        placeholder.className = "no-image";
-        placeholder.textContent = "🧪";
-
-        imageContainer.appendChild(placeholder);
-      };
-
-      imageContainer.appendChild(image);
-    } else {
-      const placeholder = document.createElement("span");
-      placeholder.className = "no-image";
-      placeholder.textContent = "🧪";
-
-      imageContainer.appendChild(placeholder);
-    }
-
-    const info = document.createElement("div");
-    info.className = "product-info";
-
-    const name = document.createElement("h3");
-    name.textContent = product.name;
-
-    const description = document.createElement("p");
-    description.className = "product-description";
-    description.textContent = product.description ||
-      "للاستفسار عن تفاصيل المنتج، تواصل معنا.";
-
-    const minimumNote = document.createElement("p");
-    minimumNote.className = "product-description";
-    minimumNote.textContent =
-      "أقل كمية للطلب: " +
-      normalizeMinimumQuantity(product.minQuantity) + " قطعة";
-
-    const price = document.createElement("div");
-    price.className = "product-price";
-    price.textContent = product.price !== ""
-      ? formatEGP(product.price) + " "
-      : "السعر عند الاستفسار";
-
-    const actions = document.createElement("div");
-    actions.className = "product-actions";
-
-    const orderButton = document.createElement("button");
-    orderButton.type = "button";
-    orderButton.className = "btn btn-primary";
-    orderButton.textContent = "🛒 أضف إلى السلة";
-
-    orderButton.addEventListener("click", () => {
-      addToCart(product.id);
-    });
-
-    actions.appendChild(orderButton);
-    info.append(name, description, minimumNote, price, actions);
-    card.append(imageContainer, info);
-    productsGrid.appendChild(card);
-  });
-}
-
-/* البحث والفلترة */
-function filterProducts() {
-  const searchTerm = productSearch.value.trim().toLowerCase();
-
-  const filtered = allProducts.filter(product => {
-    const matchesCategory =
-      activeCategory === "all" ||
-      product.category === activeCategory;
-
-    const searchableText = (
-      product.name + " " +
-      product.description + " " +
-      product.category
-    ).toLowerCase();
-
-    return matchesCategory &&
-      searchableText.includes(searchTerm);
-  });
-
-  renderProducts(filtered);
-}
-
-/* تحميل المنتجات من Google Sheets */
-async function loadProductsFromSheet() {
-  if (sheetStatus) {
-    sheetStatus.textContent = "جارٍ تحميل المنتجات...";
-    sheetStatus.className = "status-message";
-  }
-
-  try {
-    const response = await fetch(SHEET_CSV_URL, {
-      cache: "no-store"
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        "تعذر تحميل الشيت. كود الاستجابة: " + response.status
-      );
-    }
-
-    const csvText = await response.text();
-
-    if (
-      !csvText.trim() ||
-      /^\s*(<!DOCTYPE html|<html)/i.test(csvText)
-    ) {
-      throw new Error(
-        "رابط الشيت لم يُرجع بيانات CSV. تحقق من نشر الشيت."
-      );
-    }
-
-    const rows = parseCSV(csvText);
-
-    if (rows.length < 2) {
-      throw new Error(
-        "تم الوصول إلى الشيت، لكن لم يتم العثور على صفوف منتجات."
-      );
-    }
-
-    const loadedProducts = convertSheetToProducts(rows);
-
-    if (!loadedProducts.length) {
-      throw new Error(
-        "لم يتم العثور على منتجات صالحة. تحققي من عمود اسم المنتج."
-      );
-    }
-
-    allProducts = loadedProducts;
-
-    filterProducts();
-    renderCart();
-
-    if (sheetStatus) {
-      sheetStatus.textContent =
-        "تم تحميل " + allProducts.length + " منتج بنجاح.";
-      sheetStatus.className = "status-message";
-    }
-
-  } catch (error) {
-    console.error("Google Sheets error:", error);
-
-    if (sheetStatus) {
-      sheetStatus.textContent =
-        "تعذر تحميل المنتجات: " +
-        (error.message || "خطأ غير معروف");
-
-      sheetStatus.className = "status-message error";
-    }
-  }
-}
-
-/* حفظ السلة محليًا */
 try {
-  const savedCart = JSON.parse(
-    localStorage.getItem("healthCareCart") || "[]"
-  );
-
-  if (Array.isArray(savedCart)) {
-    cart = savedCart
-      .filter(item =>
-        item &&
-        item.id !== undefined &&
-        typeof item.name === "string"
-      )
-      .map(item => ({
-        id: String(item.id),
-        name: item.name,
-        price: normalizePrice(item.price),
-        minQuantity: normalizeMinimumQuantity(item.minQuantity),
-        quantity: Math.max(
-          normalizeMinimumQuantity(item.minQuantity),
-          Math.min(
-            MAX_CART_QUANTITY,
-            Math.floor(Number(item.quantity) || 1)
-          )
-        )
-      }));
-  }
+  const storedCart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY) || "[]");
+  cart = Array.isArray(storedCart) ? storedCart : [];
 } catch (error) {
   cart = [];
 }
 
 function saveCart() {
   try {
-    localStorage.setItem(
-      "healthCareCart",
-      JSON.stringify(cart)
-    );
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
   } catch (error) {
-    console.warn(
-      "تعذر حفظ السلة على هذا الجهاز.",
-      error
-    );
+    console.error("تعذر حفظ السلة:", error);
   }
 }
 
-function openCart() {
-  document.getElementById("cartDrawer").hidden = false;
-  document.getElementById("cartOverlay").hidden = false;
-  document.body.classList.add("cart-open");
-  document.getElementById("closeCart").focus();
+function formatEGP(value) {
+  return Number(value || 0).toLocaleString("en-US", {
+    maximumFractionDigits: 2
+  }) + " جنيه";
 }
 
-function closeCart() {
-  document.getElementById("cartDrawer").hidden = true;
-  document.getElementById("cartOverlay").hidden = true;
-  document.body.classList.remove("cart-open");
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, function(char) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    }[char];
+  });
 }
 
-document.getElementById("closeCart").addEventListener(
-  "click",
-  closeCart
-);
-
-document.getElementById("cartOverlay").addEventListener(
-  "click",
-  closeCart
-);
-
-document.addEventListener("keydown", function(event) {
-  if (event.key === "Escape") closeCart();
-});
-
-document.querySelector(".cart-link").addEventListener(
-  "click",
-  function(event) {
-    event.preventDefault();
-    openCart();
+function safeImageURL(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return ["https:", "http:"].includes(url.protocol) ? url.href : "";
+  } catch (error) {
+    return "";
   }
-);
-
-/* قراءة سعر المنتج */
-function getProductPrice(product) {
-  const value = normalizePrice(product.price);
-  return value === "" ? 0 : Number(value);
 }
 
-/* إضافة منتج للسلة */
-function addToCart(productId) {
-  const product = allProducts.find(
-    item => String(item.id) === String(productId)
+function normalizeText(value) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه");
+}
+
+function findColumn(headers, candidates) {
+  const normalizedHeaders = headers.map(normalizeText);
+  const normalizedCandidates = candidates.map(normalizeText);
+
+  let index = normalizedHeaders.findIndex(header =>
+    normalizedCandidates.includes(header)
   );
 
-  if (!product) {
-    alert("لم يتم العثور على المنتج. حاولي تحديث الصفحة.");
-    return;
+  if (index === -1) {
+    index = normalizedHeaders.findIndex(header =>
+      normalizedCandidates.some(candidate => candidate && header.includes(candidate))
+    );
   }
+
+  return index;
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let quoted = false;
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const next = text[i + 1];
+
+    if (char === '"' && quoted && next === '"') {
+      field += '"';
+      i++;
+    } else if (char === '"') {
+      quoted = !quoted;
+    } else if (char === "," && !quoted) {
+      row.push(field.trim());
+      field = "";
+    } else if ((char === "\n" || char === "\r") && !quoted) {
+      if (char === "\r" && next === "\n") i++;
+      row.push(field.trim());
+      if (row.some(value => value !== "")) rows.push(row);
+      row = [];
+      field = "";
+    } else {
+      field += char;
+    }
+  }
+
+  row.push(field.trim());
+  if (row.some(value => value !== "")) rows.push(row);
+  return rows;
+}
+
+function normalizePrice(rawPrice) {
+  let cleaned = String(rawPrice ?? "").trim();
+  if (!cleaned) return "";
+
+  cleaned = cleaned.replace(/[٬\s]/g, "").replace(/[^\d.,]/g, "");
+  if (!cleaned) return "";
+
+  if (cleaned.includes(",") && cleaned.includes(".")) {
+    cleaned = cleaned.replace(/,/g, "");
+  } else if (cleaned.includes(",")) {
+    if ((cleaned.match(/,/g) || []).length > 1) return "";
+    cleaned = cleaned.replace(",", ".");
+  }
+
+  if ((cleaned.match(/\./g) || []).length > 1) return "";
+  const value = Number(cleaned);
+  return Number.isFinite(value) && value >= 0 ? String(value) : "";
+}
+
+function normalizeMinimumQuantity(value) {
+  const cleaned = String(value ?? "").trim()
+    .replace(/[٠-٩]/g, digit => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/[۰-۹]/g, digit => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)));
+  const quantity = Number(cleaned);
+
+  return /^\d+$/.test(cleaned) && Number.isSafeInteger(quantity) &&
+    quantity >= 1 && quantity <= MAX_CART_QUANTITY ? quantity : 1;
+}
+
+function formatCategory(value) {
+  const category = normalizeText(value);
+  if (category.includes("معمل") || category.includes("تحاليل") || category.includes("laboratory") || category === "lab") {
+    return "laboratory";
+  }
+  if (category.includes("كليه") || category.includes("كليات") || category.includes("علميه") || category.includes("علوم") || category.includes("science") || category.includes("طلاب")) {
+    return "students";
+  }
+  return "homecare";
+}
+
+function convertSheetToProducts(csvText) {
+  const rows = parseCSV(csvText);
+  if (rows.length < 2) throw new Error("جدول المنتجات لا يحتوي على بيانات.");
+
+  const headers = rows[0];
+  const nameIndex = findColumn(headers, ["name", "product", "product name", "اسم المنتج", "المنتج"]);
+  const priceIndex = findColumn(headers, ["price", "السعر", "سعر المنتج", "سعر"]);
+  const descriptionIndex = findColumn(headers, ["description", "الوصف", "وصف المنتج"]);
+  const imageIndex = findColumn(headers, ["image", "image url", "الصورة", "رابط الصورة"]);
+  const categoryIndex = findColumn(headers, ["category", "القسم", "التصنيف"]);
+  const idIndex = findColumn(headers, ["id", "product id", "كود المنتج", "رقم المنتج"]);
+  const minimumIndex = findColumn(headers, ["minimum quantity", "min quantity", "اقل كمية", "الحد الادنى للكمية"]);
+
+  return rows.slice(1).map((row, index) => {
+    const name = String(row[nameIndex >= 0 ? nameIndex : 0] || "").trim();
+    if (!name) return null;
+
+    const rawPrice = row[priceIndex >= 0 ? priceIndex : 1];
+    return {
+      id: String(row[idIndex] || (formatCategory(row[categoryIndex]) + "-" + index + "-" + name)),
+      name,
+      price: normalizePrice(rawPrice),
+      description: String(row[descriptionIndex] || "").trim(),
+      image: safeImageURL(row[imageIndex]),
+      category: formatCategory(row[categoryIndex]),
+      minQuantity: normalizeMinimumQuantity(row[minimumIndex])
+    };
+  }).filter(Boolean);
+}
+
+function formatProducts() {
+  const grid = document.getElementById("productsGrid");
+  const status = document.getElementById("sheetStatus");
+  const empty = document.getElementById("emptyProducts");
+  const search = normalizeText(document.getElementById("productSearch").value);
+  const selected = document.querySelector(".category-button.active");
+  const category = selected ? selected.dataset.category : "all";
+
+  const filtered = allProducts.filter(product =>
+    (category === "all" || product.category === category) &&
+    (normalizeText(product.name).includes(search) || normalizeText(product.description).includes(search))
+  );
+
+  grid.innerHTML = "";
+  status.hidden = allProducts.length > 0;
+  empty.hidden = filtered.length > 0 || allProducts.length === 0;
+
+  filtered.forEach(product => {
+    const card = document.createElement("article");
+    card.className = "product-card";
+    const image = product.image
+      ? '<img src="' + escapeHTML(product.image) + '" alt="' + escapeHTML(product.name) + '" loading="lazy">'
+      : '<span class="no-image">🩺</span>';
+
+    card.innerHTML =
+      '<div class="product-image">' + image + '</div>' +
+      '<div class="product-info">' +
+        '<h3>' + escapeHTML(product.name) + '</h3>' +
+        '<p class="product-description">' + escapeHTML(product.description) + '</p>' +
+        '<div class="product-price">' + (product.price === "" ? "السعر عند الطلب" : formatEGP(product.price)) + '</div>' +
+        '<div class="product-actions"><button class="btn btn-primary" type="button">أضف إلى السلة</button></div>' +
+      '</div>';
+
+    card.querySelector("button").addEventListener("click", () => addToCart(product.id));
+    grid.appendChild(card);
+  });
+}
+
+function addToCart(productId) {
+  const product = allProducts.find(item => String(item.id) === String(productId));
+  if (!product) return;
 
   const minimum = normalizeMinimumQuantity(product.minQuantity);
-  const existing = cart.find(
-    item => String(item.id) === String(productId)
-  );
+  const existing = cart.find(item => String(item.id) === String(product.id));
 
   if (existing) {
     if (existing.quantity >= MAX_CART_QUANTITY) {
       alert("وصلت إلى الحد الأقصى للكمية.");
       return;
     }
-
     existing.minQuantity = minimum;
     existing.quantity = Math.max(existing.quantity + 1, minimum);
   } else {
     cart.push({
       id: String(product.id),
       name: product.name,
-      price: normalizePrice(product.price),
+      price: product.price,
       minQuantity: minimum,
       quantity: minimum
     });
@@ -1647,24 +1341,13 @@ function addToCart(productId) {
 }
 
 function changeQuantity(productId, amount) {
-  const item = cart.find(
-    product => String(product.id) === String(productId)
-  );
-
+  const item = cart.find(entry => String(entry.id) === String(productId));
   if (!item) return;
 
-  const currentProduct = allProducts.find(
-    product => String(product.id) === String(productId)
-  );
+  const product = allProducts.find(entry => String(entry.id) === String(productId));
+  const minimum = product ? normalizeMinimumQuantity(product.minQuantity) : normalizeMinimumQuantity(item.minQuantity);
 
-  const minimum = currentProduct
-    ? normalizeMinimumQuantity(currentProduct.minQuantity)
-    : normalizeMinimumQuantity(item.minQuantity);
-
-  if (amount < 0 && item.quantity <= minimum) {
-    return;
-  }
-
+  if (amount < 0 && item.quantity <= minimum) return;
   if (amount > 0 && item.quantity >= MAX_CART_QUANTITY) {
     alert("وصلت إلى الحد الأقصى للكمية.");
     return;
@@ -1672,54 +1355,29 @@ function changeQuantity(productId, amount) {
 
   item.minQuantity = minimum;
   item.quantity += amount;
-
-  if (item.quantity <= 0) {
-    cart = cart.filter(
-      product => String(product.id) !== String(productId)
-    );
-  }
-
   saveCart();
   renderCart();
 }
 
 function removeFromCart(productId) {
-  cart = cart.filter(
-    item => String(item.id) !== String(productId)
-  );
-
+  cart = cart.filter(item => String(item.id) !== String(productId));
   saveCart();
   renderCart();
 }
 
-/* تحديث السلة والإجماليات */
 function renderCart() {
   const cartItems = document.getElementById("cartItems");
-  const cartCount = document.getElementById("cartCount");
+  const countElement = document.getElementById("cartCount");
   const subtotalElement = document.getElementById("subtotal");
   const totalElement = document.getElementById("total");
+  const depositElement = document.getElementById("depositAmount");
+  const remainingElement = document.getElementById("remainingAmount");
 
+  if (!cartItems) return;
   cartItems.replaceChildren();
 
-  const count = cart.reduce(
-    (sum, item) => sum + item.quantity,
-    0
-  );
-
-  cartCount.textContent = count;
-
   let subtotal = 0;
-  const hasUnknownPrice = cart.some(item => {
-    const current = allProducts.find(
-      product => String(product.id) === String(item.id)
-    );
-
-    const price = current
-      ? normalizePrice(current.price)
-      : normalizePrice(item.price);
-
-    return price === "";
-  });
+  let hasUnknownPrice = false;
 
   if (!cart.length) {
     const emptyMessage = document.createElement("p");
@@ -1728,46 +1386,28 @@ function renderCart() {
   }
 
   cart.forEach(item => {
-    const currentProduct = allProducts.find(
-      product => String(product.id) === String(item.id)
-    );
-
-    if (currentProduct) {
-      item.name = currentProduct.name;
-      item.price = normalizePrice(currentProduct.price);
-      item.minQuantity = normalizeMinimumQuantity(
-        currentProduct.minQuantity
-      );
-      item.quantity = Math.max(
-        item.quantity,
-        item.minQuantity
-      );
-    } else {
-      item.minQuantity = normalizeMinimumQuantity(item.minQuantity);
-      item.quantity = Math.max(
-        item.quantity,
-        item.minQuantity
-      );
+    const current = allProducts.find(product => String(product.id) === String(item.id));
+    if (current) {
+      item.name = current.name;
+      item.price = current.price;
+      item.minQuantity = normalizeMinimumQuantity(current.minQuantity);
+      item.quantity = Math.max(Number(item.quantity) || item.minQuantity, item.minQuantity);
     }
 
-    const unitPrice = Number(item.price || 0) / Math.max(item.minQuantity, 1);
-    subtotal += unitPrice * item.quantity;
+    const minimum = normalizeMinimumQuantity(item.minQuantity);
+    const quantity = Math.max(Number(item.quantity) || minimum, minimum);
+    const rawPrice = normalizePrice(item.price);
+    const unitPrice = rawPrice === "" ? 0 : Number(rawPrice) / minimum;
+    subtotal += unitPrice * quantity;
+    if (rawPrice === "") hasUnknownPrice = true;
 
     const row = document.createElement("div");
     row.className = "cart-item";
-
     const details = document.createElement("div");
-
     const name = document.createElement("strong");
     name.textContent = item.name;
-
-    const priceText = document.createElement("p");
-    priceText.textContent =
-      item.price !== ""
-        ? formatEGP(item.price) + "  (" + item.minQuantity + " قطعة) | الكمية: " +
-          item.quantity + " | الإجمالي: " + formatEGP(unitPrice * item.quantity)
-        : "السعر عند الاستفسار";
-
+    const price = document.createElement("p");
+    price.textContent = rawPrice === "" ? "السعر عند الطلب" : formatEGP(unitPrice * quantity);
     const controls = document.createElement("div");
     controls.className = "cart-controls";
 
@@ -1775,199 +1415,166 @@ function renderCart() {
     minus.type = "button";
     minus.textContent = "−";
     minus.setAttribute("aria-label", "تقليل الكمية");
-    minus.disabled = item.quantity <= normalizeMinimumQuantity(item.minQuantity);
-    minus.addEventListener("click", () => {
-      changeQuantity(item.id, -1);
-    });
+    minus.addEventListener("click", () => changeQuantity(item.id, -1));
 
-    const quantity = document.createElement("span");
-    quantity.textContent = item.quantity;
+    const quantityText = document.createElement("span");
+    quantityText.textContent = quantity;
 
     const plus = document.createElement("button");
     plus.type = "button";
     plus.textContent = "+";
     plus.setAttribute("aria-label", "زيادة الكمية");
-    plus.addEventListener("click", () => {
-      changeQuantity(item.id, 1);
-    });
+    plus.addEventListener("click", () => changeQuantity(item.id, 1));
 
     const remove = document.createElement("button");
     remove.type = "button";
     remove.textContent = "حذف";
-    remove.addEventListener("click", () => {
-      removeFromCart(item.id);
-    });
+    remove.addEventListener("click", () => removeFromCart(item.id));
 
-    controls.append(minus, quantity, plus, remove);
-    details.append(name, priceText, controls);
+    controls.append(minus, quantityText, plus, remove);
+    details.append(name, price, controls);
     row.appendChild(details);
     cartItems.appendChild(row);
   });
 
-  subtotalElement.textContent = formatEGP(subtotal);
-  totalElement.textContent = formatEGP(subtotal);
+  const deposit = Math.round(subtotal * 0.25 * 100) / 100;
+  const remaining = subtotal - deposit;
+  const count = cart.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
 
-  if (hasUnknownPrice) {
-    totalElement.textContent +=
-      " + توجد منتجات تحتاج تأكيد السعر";
+  if (countElement) countElement.textContent = count;
+  if (subtotalElement) subtotalElement.textContent = formatEGP(subtotal);
+  if (totalElement) {
+    totalElement.textContent = formatEGP(subtotal);
+    if (hasUnknownPrice) totalElement.textContent += " + منتجات سعرها عند الطلب";
   }
+  if (depositElement) depositElement.textContent = formatEGP(deposit);
+  if (remainingElement) remainingElement.textContent = formatEGP(remaining);
 
   saveCart();
 }
 
-/* إرسال الطلب عبر واتساب */
-document.getElementById("checkoutForm").addEventListener(
-  "submit",
-  function(event) {
-    event.preventDefault();
-
-    if (!cart.length) {
-      alert("أضف منتجًا إلى السلة أولًا.");
-      return;
-    }
-
-    const name = document.getElementById(
-      "customerName"
-    ).value.trim();
-
-    const phone = document.getElementById(
-      "customerPhone"
-    ).value.trim();
-
-    const address = document.getElementById(
-      "customerAddress"
-    ).value.trim();
-
-    const paymentInput = document.querySelector(
-      'input[name="payment"]:checked'
-    );
-
-    if (!name || !phone || !address || !paymentInput) {
-      alert(
-        "من فضلك أدخل الاسم ورقم الهاتف والعنوان وطريقة الدفع."
-      );
-      return;
-    }
-
-    let message = "طلب جديد من Health Care Store\n\n";
-    message += "الاسم: " + name + "\n";
-    message += "الهاتف: " + phone + "\n";
-    message += "العنوان: " + address + "\n";
-    message += "طريقة الدفع: " + paymentInput.value + "\n\n";
-    message += "المنتجات:\n";
-
-    cart.forEach(item => {
-      const current = allProducts.find(
-        product => String(product.id) === String(item.id)
-      );
-
-      const unitPrice = Number(
-        current ? current.price : item.price || 0
-      ) / Math.max(
-        current ? current.minQuantity : item.minQuantity || 1,
-        1
-      );
-
-      message += "- " + item.name +
-        " | الكمية: " + item.quantity +
-        " | سعر القطعة: " + formatEGP(unitPrice) +
-        " | الإجمالي: " + formatEGP(unitPrice * item.quantity) +
-        "\n";
-    });
-
-    message += "\nالإجمالي المعروف: " +
-      document.getElementById("subtotal").textContent;
-
-    message += "\nالتوصيل: يُحدد عند التأكيد";
-
-    const whatsappURL =
-      "https://wa.me/" + WHATSAPP_NUMBER +
-      "?text=" + encodeURIComponent(message);
-
-    const newWindow = window.open(
-      whatsappURL,
-      "_blank",
-      "noopener,noreferrer"
-    );
-
-    if (!newWindow) {
-      window.location.href = whatsappURL;
-    }
-  }
-);
-
-/* أزرار أقسام المنتجات */
-document.querySelectorAll(".category-button").forEach(button => {
-  button.addEventListener("click", function() {
-    activeCategory = button.dataset.category || "all";
-
-    document.querySelectorAll(".category-button").forEach(item => {
-      item.classList.toggle("active", item === button);
-    });
-
-    filterProducts();
-  });
-});
-
-/* الضغط على بطاقات الأقسام */
-function selectCategory(card) {
-  activeCategory = card.dataset.category || "all";
-
-  document.querySelectorAll(".category-button").forEach(button => {
-    button.classList.toggle(
-      "active",
-      button.dataset.category === activeCategory
-    );
-  });
-
-  filterProducts();
-
-  document.getElementById("products").scrollIntoView({
-    behavior: "smooth"
-  });
+function openCart() {
+  document.getElementById("cartOverlay").hidden = false;
+  document.getElementById("cartDrawer").hidden = false;
+  document.body.classList.add("cart-open");
 }
 
-document.querySelectorAll(".category-card").forEach(card => {
-  card.addEventListener("click", () => {
-    selectCategory(card);
+function closeCart() {
+  document.getElementById("cartOverlay").hidden = true;
+  document.getElementById("cartDrawer").hidden = true;
+  document.body.classList.remove("cart-open");
+}
+
+function checkout() {
+  if (!cart.length) {
+    alert("أضف منتجًا إلى السلة أولًا.");
+    return;
+  }
+
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("customerPhone").value.trim();
+  const address = document.getElementById("customerAddress").value.trim();
+  const paymentInput = document.querySelector('input[name="payment"]:checked');
+
+  if (!name || !phone || !address || !paymentInput) {
+    alert("من فضلك أدخل الاسم ورقم الهاتف والعنوان وطريقة الدفع.");
+    return;
+  }
+
+  let subtotal = 0;
+  let hasUnknownPrice = false;
+  let message = "طلب جديد من Health Care Store\n\n";
+  message += "الاسم: " + name + "\n";
+  message += "الهاتف: " + phone + "\n";
+  message += "العنوان: " + address + "\n";
+  message += "طريقة الدفع: " + paymentInput.value + "\n\n";
+  message += "المنتجات:\n";
+
+  cart.forEach(item => {
+    const product = allProducts.find(current => String(current.id) === String(item.id));
+    const minimum = normalizeMinimumQuantity(product ? product.minQuantity : item.minQuantity);
+    const quantity = Math.max(Number(item.quantity) || minimum, minimum);
+    const rawPrice = normalizePrice(product ? product.price : item.price);
+    const unitPrice = rawPrice === "" ? 0 : Number(rawPrice) / minimum;
+
+    if (rawPrice === "") hasUnknownPrice = true;
+    subtotal += unitPrice * quantity;
+    message += "- " + item.name +
+      " | الكمية: " + quantity +
+      " | سعر الوحدة: " + (rawPrice === "" ? "عند الطلب" : formatEGP(unitPrice)) +
+      " | الإجمالي: " + (rawPrice === "" ? "يُحدد لاحقًا" : formatEGP(unitPrice * quantity)) + "\n";
   });
 
-  card.addEventListener("keydown", function(event) {
-    if (event.key === "Enter" || event.key === " ") {
+  const deposit = Math.round(subtotal * 0.25 * 100) / 100;
+  const remaining = subtotal - deposit;
+  message += "\nإجمالي المنتجات: " + formatEGP(subtotal);
+  if (hasUnknownPrice) message += " (لا يشمل المنتجات التي لم يحدد سعرها)";
+  message += "\nمقدم الحجز 25%: " + formatEGP(deposit);
+  message += "\nالمتبقي عند الاستلام: " + formatEGP(remaining);
+  message += "\nالتوصيل: يُحدد عند التأكيد";
+
+  const whatsappURL = "https://wa.me/" + WHATSAPP_NUMBER + "?text=" + encodeURIComponent(message);
+  const newWindow = window.open(whatsappURL, "_blank", "noopener,noreferrer");
+  if (!newWindow) window.location.href = whatsappURL;
+}
+
+async function loadProducts() {
+  const status = document.getElementById("sheetStatus");
+  try {
+    const response = await fetch(SHEET_CSV_URL, { cache: "no-store" });
+    if (!response.ok) throw new Error("تعذر تحميل المنتجات.");
+    allProducts = convertSheetToProducts(await response.text());
+    cart = cart.filter(item => allProducts.some(product => String(product.id) === String(item.id)));
+    renderCart();
+    formatProducts();
+  } catch (error) {
+    console.error(error);
+    status.textContent = "تعذر تحميل المنتجات حاليًا. يرجى المحاولة لاحقًا.";
+    status.classList.add("error");
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("closeCart").addEventListener("click", closeCart);
+  document.getElementById("cartOverlay").addEventListener("click", closeCart);
+  document.getElementById("checkoutForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    checkout();
+  });
+  document.getElementById("productSearch").addEventListener("input", formatProducts);
+
+  document.querySelectorAll(".category-button").forEach(button => {
+    button.addEventListener("click", function() {
+      document.querySelectorAll(".category-button").forEach(item => item.classList.toggle("active", item === button));
+      formatProducts();
+    });
+  });
+
+  document.querySelectorAll(".cart-link").forEach(link => {
+    link.addEventListener("click", function(event) {
       event.preventDefault();
-      selectCategory(card);
-    }
+      openCart();
+    });
   });
-});
 
-/* البحث */
-productSearch.addEventListener("input", filterProducts);
-
-/* قائمة الموبايل */
-const menuToggle = document.getElementById("menuToggle");
-const navLinks = document.getElementById("navLinks");
-
-menuToggle.addEventListener("click", function() {
-  const isOpen = navLinks.classList.toggle("open");
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-});
-
-navLinks.querySelectorAll("a").forEach(link => {
-  link.addEventListener("click", function() {
-    navLinks.classList.remove("open");
-    menuToggle.setAttribute("aria-expanded", "false");
+  document.getElementById("menuToggle").addEventListener("click", function() {
+    const nav = document.getElementById("navLinks");
+    const isOpen = nav.classList.toggle("open");
+    this.setAttribute("aria-expanded", String(isOpen));
   });
+
+  document.querySelectorAll(".category-card").forEach(card => {
+    card.addEventListener("click", function() {
+      const button = document.querySelector('.category-button[data-category="' + card.dataset.category + '"]');
+      if (button) button.click();
+      document.getElementById("products").scrollIntoView({ behavior: "smooth" });
+    });
+  });
+
+  document.getElementById("currentYear").textContent = new Date().getFullYear();
+  renderCart();
+  loadProducts();
 });
-
-/* السنة الحالية */
-document.getElementById("currentYear").textContent =
-  new Date().getFullYear();
-
-/* تشغيل المتجر */
-renderCart();
-loadProductsFromSheet();
 </script>
-
 </body>
 </html>
-
